@@ -1,0 +1,8 @@
+---
+- name: Set snmp contact, location and allowed addresses
+  bigip_snmp:
+    contact: "{{ snmp_configs.contact }}"
+    location: "{{ snmp_configs.location }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  tags: bigip-snmp-base

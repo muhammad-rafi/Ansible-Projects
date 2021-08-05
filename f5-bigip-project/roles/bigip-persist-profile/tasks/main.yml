@@ -1,0 +1,12 @@
+---
+
+# tasks file for bigip-persist-profile
+- name: Task to create a Persistence profile with src_addr 
+  include_tasks: persist-profile.yml
+  when:
+    - persist_profile.name is defined
+
+- name: Task to apply persistence profile to a Virtual Server
+  include_tasks: apply-profile.yml
+  when:
+    - virtual_server.name is defined

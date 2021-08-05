@@ -1,0 +1,5 @@
+---
+# defaults file for bigip-https-redirect-irule
+virtual_server:
+  - name: virtual_server_1
+    partition: TENANT_1

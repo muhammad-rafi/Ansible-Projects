@@ -1,0 +1,10 @@
+---
+# tasks file for bigip-ui-banner
+- name: Set the UI Login banner for the BIG-IP
+  bigip_sys_global:
+    security_banner: yes
+    banner_text: "{{ bigip_banner.text }}"
+    provider: "{{ cli }}"
+    state: "{{ bigip_banner.state }}"
+  delegate_to: localhost
+  tags: bigip-ui-banner

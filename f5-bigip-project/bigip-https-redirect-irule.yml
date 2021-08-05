@@ -1,0 +1,28 @@
+- name: F5 BIGIP FOR IRULE HTTPS REDIRECT
+  hosts: eve_bigip
+  gather_facts: false  
+  connection: local
+  collections: 
+    - f5networks.f5_modules
+    
+  vars:
+    cli:
+      server: "{{ inventory_hostname }}"
+      user: "{{ ansible_user }}"
+      password: "{{ ansible_pass }}"
+      server_port: "{{ port }}"
+      validate_certs: no
+
+  tasks:
+    # Task to attach an irule https_redirect to a virtual server 
+    - name: Apply https redirect irule to a virtual server 
+      bigip_virtual_server:
+        name: "{{ name }}"
+        partition: "{{ partition | upper }}"
+        irules:
+          - /Common/_sys_https_redirect
+        all_profiles:
+          - http
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: https_redirect_irule

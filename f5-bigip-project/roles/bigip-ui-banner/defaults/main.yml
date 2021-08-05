@@ -1,0 +1,14 @@
+---
+# defaults file for bigip-ui-banner
+bigip_banner:
+  text: |
+    ****************************************************** 
+    **            "{{ inventory_hostname[0:11] }}"/"{{ inventory_hostname[0:11] }}"               **
+    **             F5 vBIG-IP - 15.1.2.1                **
+    **  Login Required. If you have not been provided   **
+    **     with permission to access this device,       **  
+    **            disconnect immediately!               **
+    **       Unauthorized access is prohibited.         **
+    **                                                  ** 
+    ****************************************************** 
+  state: present

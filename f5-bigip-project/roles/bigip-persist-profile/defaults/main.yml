@@ -1,0 +1,21 @@
+---
+
+# defaults file for bigip-persist-profile
+persist_profile:
+  name: src_persistence
+  partition: TENANT_1
+  entry_timeout: "300"
+  parent: /Common/source_addr
+  # hash_algorithm: carp
+  # match_across_services: yes
+  # match_across_virtuals: yes
+  # mirror: yes
+  mask: 255.255.255.255
+  state: present
+
+virtual_server:
+  name: virtual_server_1
+  partition: TENANT_1
+  default_persist_profile: src_persistence 
+  fallback_persist_profile: null
+

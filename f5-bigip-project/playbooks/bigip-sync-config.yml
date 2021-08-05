@@ -1,0 +1,49 @@
+- name: F5 BIGIP SYNC CONFIGURATION PLAYBOOK 
+  hosts: eve_bigip
+  gather_facts: false  
+  connection: local
+  collections: 
+    - f5networks.f5_modules
+
+  vars_files:
+    - bigip_vars_file.yml
+
+  vars:
+    cli:
+      server: "{{ inventory_hostname }}"
+      user: "{{ ansible_user }}"
+      password: "{{ ansible_pass }}"
+      server_port: "{{ port }}"
+      validate_certs: no
+
+  tasks:
+    - name: Get the failover state of the BIG-IP  
+      bigip_command:
+        provider: "{{ cli }}"
+        commands:
+          - show sys failover
+        wait_for:
+         - result[0] contains "Failover"
+      delegate_to: localhost
+      register: failover_state
+
+    - block:
+      - name: Sync configuration from device to the group 
+        bigip_configsync_action:
+          device_group: "{{ device_group.name }}"
+          sync_device_to_group: yes
+          provider: "{{ cli }}"
+        delegate_to: localhost
+        ignore_errors: yes
+
+      when: "'active' in failover_state.stdout[0]"
+      delegate_to: localhost
+
+    - name: Sync configuration from group to device
+      bigip_configsync_action:
+        device_group: "{{ device_group.name }}"
+        sync_group_to_device: yes
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: sync_config_group
+

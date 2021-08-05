@@ -1,0 +1,189 @@
+- name: F5 BIGIP BASIC CONFIGURATION PLAYBOOK 
+  hosts: eve_bigip
+  gather_facts: false  
+  connection: local
+  collections: 
+    - f5networks.f5_modules
+    
+  vars:
+    cli:
+      server: "{{ inventory_hostname }}"
+      user: "{{ ansible_user }}"
+      password: "{{ ansible_pass }}"
+      server_port: "{{ port }}"
+      validate_certs: no
+
+  tasks:
+    - name: Set the hostname of the BIG-IP
+      bigip_hostname:
+        hostname: eve-bigip01.devnetbro.com
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: bigip-hostname
+
+    - name: Add the user 'devnetbro' as an admin for all partitions
+      bigip_user:
+        username_credential: devnetbro
+        password_credential: myP@ssw0rd
+        full_name: Devnet Bro
+        partition: Common
+        partition_access: all:admin # Parition:Role
+        update_password: always
+        shell: bash # choices: tmsh, bash, none
+        state: present
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: bigip-user
+
+    - name: Set NTP server and timezone for the BIG-IP
+      bigip_device_ntp:
+        timezone: Europe/London
+        ntp_servers:
+          - 192.168.56.9
+          - 192.168.56.10
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: bigip-ntp
+
+    - name: Set the DNS settings on the BIG-IP
+      bigip_device_dns:
+        name_servers:
+          - 192.168.56.3
+          - 192.168.56.4
+        search:
+          - devnetbro.com
+        cache: disabled
+        ip_version: 4
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: bigip-dns
+
+    - name: Add a remote syslog server on the BIG-IP
+      bigip_remote_syslog:
+        remote_host: "{{ item.remote_host }}"
+        remote_port: "{{ item.remote_port }}"
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: bigip-syslog
+      loop:
+        - remote_host: 192.168.56.5
+          remote_port: '514'
+          local_ip: none
+        - remote_host: 192.168.56.6
+          remote_port: '514'
+          local_ip: none
+          
+    - name: Set the banner for the BIG-IP
+      bigip_device_sshd:
+        banner: enabled
+        banner_text: |
+          ****************************************************** 
+          **           "{{ inventory_hostname }}"             **
+          **             F5 vBIG-IP - 15.1.2.1                **
+          **  Login Required. If you have not been provided   **
+          **     with permission to access this device,       **  
+          **            disconnect immediately!               **
+          **       Unauthorized access is prohibited.         **
+          **                                                  ** 
+          ****************************************************** 
+          
+        # banner_text: "{{ lookup('file', '/path/to/file') }}"
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: bigip-banner
+
+    - name: Set the SSHD service to run on port 22
+      bigip_device_sshd:
+        port: 22
+        allow: all
+        inactivity_timeout: 600
+        log_level: info
+        login: enabled  
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: bigip-sshd
+
+    - name: Set snmp contact, location and allowed addresses
+      bigip_snmp:
+        contact: DevNetBro
+        location: Birmingham, UK
+        allowed_addresses:
+          - 1.1.1.1
+          - 2.2.2.2
+          - 3.3.3.3
+          - "127.0.0.0/8"
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: bigip-snmp-base
+
+    - name: Create SMNP v2c read-only and read-write communities
+      bigip_snmp_community:
+        name: "{{ item.name }}"
+        community: "{{ item.community }}"
+        version: "{{ item.version }}"
+        access: "{{ item.access }}"
+        ip_version: "{{ item.ip_version }}"
+        # partition: "{{ item.partition }}"
+        state: "{{ item.state }}"
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: bigip-snmp-community
+      loop:
+        - name: devnetv2c_ro
+          community: devnetv2c_ro
+          version: v2c
+          access: read-only
+          ip_version: '4'
+          # partition: Common
+          state: present 
+        - name: devnetv2c_rw
+          community: devnetv2c_rw
+          version: v2c
+          access: read-write
+          ip_version: '4'
+          state: present 
+          # partition: Common
+
+    - name: Create SMNP v3 read-only and read-write community
+      bigip_snmp_community:
+        version: "{{ item.version }}"
+        name: "{{ item.name }}"
+        snmp_username: "{{ item.snmp_username }}"
+        snmp_auth_protocol: "{{ item.snmp_auth_protocol }}"
+        snmp_auth_password: "{{ item.snmp_auth_password }}"
+        snmp_privacy_protocol: "{{ item.snmp_privacy_protocol }}"
+        snmp_privacy_password: "{{ item.snmp_privacy_password }}"
+        oid: "{{ item.oid }}"
+        access: "{{ item.access }}"
+        state: "{{ item.state }}"
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: bigip-snmpv3
+      loop:
+        - version: v3
+          name: devnebro_ro
+          snmp_username: devnebro_ro
+          snmp_auth_protocol: sha
+          snmp_auth_password: devnetbroro
+          snmp_privacy_protocol: aes
+          snmp_privacy_password: devnetbroro
+          oid: .1
+          access: ro
+          state: present
+        - version: v3
+          name: devnebro_rw
+          snmp_username: devnetbro_rw
+          snmp_auth_protocol: md5
+          snmp_auth_password: devnetbrorw
+          snmp_privacy_protocol: des
+          snmp_privacy_password: devnetbrorw
+          oid: null
+          access: rw
+          state: present
+
+    - name: Save the running configuration of the BIG-IP
+      bigip_config:
+        save: yes
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: save_config

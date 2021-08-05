@@ -1,0 +1,77 @@
+- name: F5 BIGIP BASIC CONFIGURATION PLAYBOOK WITH HA ACTIVE/STANDBY
+  hosts: eve_bigip
+  gather_facts: false  
+  connection: local
+  collections: 
+    - f5networks.f5_modules
+
+  vars:
+    cli:
+      server: "{{ inventory_hostname }}"
+      user: "{{ ansible_user }}"
+      password: "{{ ansible_pass }}"
+      server_port: "{{ port }}"
+      validate_certs: no
+
+  tasks:
+    - name: Get the failover state of the BIG-IP  
+      bigip_command:
+        provider: "{{ cli }}"
+        commands:
+          - show sys failover
+        wait_for:
+         - result[0] contains "Failover"
+      delegate_to: localhost
+      register: failover_state
+   
+    - block:
+      - name: CONFIGURING NTP SERVERS
+        include_role: 
+          name: bigip-ntp
+
+      - name: CONFIGURING DNS SERVERS
+        include_role: 
+          name: bigip-dns
+
+      - name: CONFIGURING REMOTE SYSLOG SERVERS
+        include_role: 
+          name: bigip-syslog
+
+      - name: CONFIGURING SSHD SERVICE
+        include_role: 
+          name: bigip-sshd
+
+      - name: CONFIGURING SSHD ACLs
+        include_role: 
+          name: bigip-sshd-acl
+
+      - name: CONFIGURING SSHD BANNER
+        include_role: 
+          name: bigip-sshd-banner
+
+      - name: CONFIGURING UI LOGIN BANNER
+        include_role: 
+          name: bigip-ui-banner
+
+      - name: CONFIGURING SMNP V2C 
+        include_role: 
+          name: bigip-snmpv2
+
+      - name: CONFIGURING SMNP ACLs 
+        include_role: 
+          name: bigip-snmp-acl
+
+      - name: CONFIGURING SMNP V3
+        include_role: 
+          name: bigip-snmpv3
+
+      when: "'active' in failover_state.stdout[0]"
+      delegate_to: localhost
+
+    - name: Save the running configuration of the BIG-IP
+      bigip_config:
+        provider: "{{ cli }}"
+        save: yes
+      delegate_to: localhost
+      tags: save-config
+

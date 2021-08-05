@@ -1,0 +1,8 @@
+---
+
+# tasks file for bigip-vlan
+- name: Task to create vlan and tagged to the interface 
+  include_tasks: vlan-tag.yml
+  when:
+    - vlan is defined 
+    

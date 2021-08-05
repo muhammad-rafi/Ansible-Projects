@@ -1,0 +1,16 @@
+---
+# tasks file for bigip-users
+- name: Adding bigip user 
+  bigip_user:
+    username_credential: "{{ item.username }}"
+    password_credential: "{{ item.password }}"
+    full_name: "{{ item.full_name }}"
+    partition: "{{ item.partition }}"
+    partition_access: "{{ item.access }}" # Parition:Role
+    update_password: "{{ item.update_password }}"
+    shell: "{{ item.shell }}" # choices: tmsh, bash, none
+    state: "{{ item.state }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  with_items: "{{ users }}"
+  tags: bigip-user

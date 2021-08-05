@@ -1,0 +1,11 @@
+---
+
+- name: F5 Big-ip vlan creation 
+  hosts: eve_bigip
+  gather_facts: false  
+  connection: local
+  collections: 
+    - f5networks.f5_modules
+
+  roles:
+    - bigip-vlan

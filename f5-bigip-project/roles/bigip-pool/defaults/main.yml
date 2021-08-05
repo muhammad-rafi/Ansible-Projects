@@ -1,0 +1,37 @@
+---
+# defaults file for bigip-pool
+pool:
+  name: httpserver_pool_1
+  description: httpserver_pool_1
+  partition: TENANT_2
+  lb_method: round-robin
+  state: present
+  # slow_ramp_time: 10
+  # monitor_type: single
+  # quorum: 1
+  monitors:
+    - /Common/gateway_icmp
+    - /Common/tcp
+
+pool_members:
+  - name: http_pool_member_1
+    description: http_pool_member_1
+    host: 192.168.20.21 # to change the IP of the pool member, delete and create new one
+    port: 80
+    partition: TENANT_2
+    state: enabled # change state to 'forced_offline' for disable and 'absent' to delete the pool member
+    # priority_group: 1
+    # connection_limit: 100
+    # rate_limit: 50
+    # ratio: 2
+  
+  - name: http_pool_member_2
+    description: http_pool_member_2
+    host: 192.168.20.22
+    port: 80
+    partition: TENANT_2
+    state: enabled
+    # priority_group: 1
+    # connection_limit: 100
+    # rate_limit: 50
+    # ratio: 2

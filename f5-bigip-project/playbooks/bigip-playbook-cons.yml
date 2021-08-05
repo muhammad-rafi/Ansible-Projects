@@ -1,0 +1,288 @@
+- name: F5 BIGIP PLAYBOOK WITH CONSTANTS  
+  hosts: eve_bigip
+  gather_facts: false  
+  connection: local
+  collections: 
+    - f5networks.f5_modules
+  
+  vars:
+    cli:
+      server: "{{ inventory_hostname }}"
+      user: "{{ ansible_user }}"
+      password: "{{ ansible_pass }}"
+      server_port: "{{ port }}"
+      validate_certs: no
+
+  tasks:
+
+    # Backup the F5 BIGIP LTM 
+    - name: Create and download a new UCS backup file 
+      bigip_ucs_fetch:
+        backup: yes
+        src: eveF5_backup_26-05-2021.ucs
+        dest: ~/f5-bigip-project/tmp/eveF5_backup_26-05-2021.ucs
+        # fail_on_missing: yes
+        create_on_missing: yes 
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: bigip_backup
+
+    # Create a new partition
+    - name: Create a new partition 
+      bigip_partition:
+        name: TENANT_1
+        description: 'TENANT_1'
+        # route_domain: 1
+        state: present
+        provider: "{{ cli }}"
+          # user: root
+          # password: password
+          # server: eve-bigip01.devnetbro.com
+          # validate_certs: no
+      delegate_to: localhost
+      tags: partition
+
+    # Create a route-domain 
+    - name: Create a new route domain 
+      bigip_routedomain: 
+        name: '1'
+        description: 'TENANT_1'
+        partition: 'TENANT_1'
+        id: 1
+        state: present
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: route_domain
+
+    # Attach a route-domain to a partition 
+    - name: Attach a route domain to a previously created partition
+      bigip_partition:
+        name: TENANT_1
+        route_domain: 1
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: attach_rd
+
+    # Create VLAN and tag to an interface
+    - name: Create VLAN and tagged to the interface
+      bigip_vlan:
+        name: TENANT_1_VL10
+        partition: TENANT_1
+        tag: 10
+        tagged_interface: 1.3
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: vlan
+
+    # Create local self-ip under the specific partition
+    - name: Create Self IP under the partition as traffic group local only 
+      bigip_selfip:
+        name: "192.168.10.2"
+        address: 192.168.10.2
+        netmask: 255.255.255.0
+        partition: TENANT_1
+        vlan: TENANT_1_VL10
+        route_domain: 1
+        allow_service: default
+        state: present
+        # traffic_group: traffic-group-local-only
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: selfip_local
+
+    # Create floating self-ip under the specific partition
+    - name: Create Self IP under the partition as traffic group floating 
+      bigip_selfip:
+        name: "192.168.10.1"
+        address: 192.168.10.1
+        netmask: 255.255.255.0
+        partition: TENANT_1
+        vlan: TENANT_1_VL10
+        route_domain: 1
+        allow_service: default
+        state: present
+        traffic_group: /Common/traffic-group-1
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: selfip_float
+
+    # Create a static route with gateway address
+    - name: Create static route with gateway address
+      bigip_static_route:
+        name: default_route 
+        description: default_route
+        destination: 0.0.0.0
+        netmask: 0.0.0.0
+        gateway_address: 192.168.10.254
+        partition: TENANT_1
+        route_domain: 1
+        state: present 
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: static_route
+
+    # Create a pool 
+    - name: Create a pool and set monitors
+      bigip_pool:
+        state: present
+        name: webserver_pool
+        description: webserver_pool
+        partition: TENANT_1
+        lb_method: round-robin
+        # slow_ramp_time: 10
+        # monitor_type: single
+        # quorum: 1
+        monitors:
+          - /Common/gateway_icmp
+          - /Common/tcp
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: pool
+
+    # Create pool members 
+    - name: Add pool member
+      bigip_pool_member:
+        pool: webserver_pool
+        partition: TENANT_1
+        host: "{{ item.address }}"
+        name: "{{ item.name }}"
+        port: "{{ item.port }}"
+        description: "{{ item.description }}"
+        # priority_group: "{{ item.priority_group }}"
+        # connection_limit: "{{ item.connection_limit }}"
+        # rate_limit: "{{ item.rate_limit }}"
+        # ratio: "{{ item.ratio }}"
+        state: "{{ item.state }}"
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: pool_members
+      loop:
+        - address: 192.168.10.21 # to change the ip of the pool member, delete and create new one
+          name: webserver_mem_1
+          description: webserver_mem_1
+          port: 80
+          state: enabled # change state to 'forced_offline' for disable and 'absent' to delete the pool member
+          # priority_group: 4
+          # connection_limit: 100
+          # rate_limit: 50
+          # ratio: 2
+        - address: 192.168.10.22
+          name: webserver_mem_2
+          description: webserver_mem_2
+          port: 80
+          state: enabled
+          # priority_group: 3
+          # connection_limit: 100
+          # rate_limit: 50
+          # ratio: 2
+
+    # Create a virtual server 
+    - name: Create a Virtual Server
+      bigip_virtual_server:
+        state: present
+        partition: TENANT_1
+        name: virtual_server_1
+        description: virtual_server_1
+        port: '8080'
+        destination: 192.168.10.20
+        pool: webserver_pool
+        snat: Automap
+        type: standard
+        source: 0.0.0.0/0
+        port_translation: yes
+        # source_port: "80"
+        # all_profiles:
+        #   - http
+        #   - clientssl
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: virtual_server
+
+    # Create x_forward http profile
+    - name: Create xforward HTTP profile
+      bigip_profile_http:
+        name: x_forward
+        insert_xforwarded_for: yes
+        redirect_rewrite: none
+        partition: TENANT_1
+        state: present
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: http_x_forward
+
+    # Create persistence http profile
+    - name: Create a Persistence profile with src_addr 
+      bigip_profile_persistence_src_addr:
+        name: src_persistence
+        state: present
+        partition: TENANT_1
+        entry_timeout: "300"
+        parent: /Common/source_addr
+        # hash_algorithm: carp
+        # match_across_services: yes
+        # match_across_virtuals: yes
+        # mirror: yes
+        mask: 255.255.255.255
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: persist_src_addr
+
+    # Create a persistence cookie profile with expiration time
+    - name: Create a persistence cookie profile with expiration time
+      bigip_profile_persistence_cookie:
+        name: cookie_persistence_profile
+        description: cookie for customer
+        cookie_name: customer_cookie
+        parent: /Common/cookie
+        state: present
+        partition: TENANT_1
+        # secure: yes
+        # update_password: always
+        # encrypt_cookie_pool_name: yes
+        # encryption_passphrase: somephrase
+        # always_send: yes
+        # cookie_encryption: disabled
+        cookie_method: insert
+        expiration: 
+          days: 7
+          hours: 12
+          minutes: 30
+          seconds: 10
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: cookie_profile
+
+    # Apply previously created profles 
+    - name: Apply previously created profiles to a Virtual Server
+      bigip_virtual_server:
+        partition: TENANT_1
+        name: virtual_server_1
+        profiles: 
+          - x_forward
+        default_persistence_profile: src_persistence
+        fallback_persistence_profile: cookie_persistence_profile
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: apply_profiles
+
+    # Attached https redirect irule to a virtual server
+    - name: Apply https redirect irule to a virtual server 
+      bigip_virtual_server:
+        name: virtual_server_1
+        partition: TENANT_1
+        state: present
+        irules:
+          - /Common/_sys_https_redirect
+        all_profiles:
+          - http
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: https_redirect_irule
+
+    - name: Save the running configuration of the BIG-IP
+      bigip_config:
+        save: yes
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: save_config
+

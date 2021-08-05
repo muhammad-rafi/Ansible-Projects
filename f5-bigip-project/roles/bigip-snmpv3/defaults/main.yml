@@ -1,0 +1,23 @@
+---
+# defaults file for bigip-snmpv3
+snmpv3_users:
+  - version: v3
+    name: devnebro_ro
+    snmp_username: devnebro_ro
+    snmp_auth_protocol: sha
+    snmp_auth_password: devnetbroro
+    snmp_privacy_protocol: aes
+    snmp_privacy_password: devnetbroro
+    oid: .1
+    access: ro
+    state: present
+  - version: v3
+    name: devnebro_rw
+    snmp_username: devnetbro_rw
+    snmp_auth_protocol: md5
+    snmp_auth_password: devnetbrorw
+    snmp_privacy_protocol: des
+    snmp_privacy_password: devnetbrorw
+    oid: null
+    access: rw
+    state: present

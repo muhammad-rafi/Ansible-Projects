@@ -1,0 +1,20 @@
+---
+
+# Task to create Self IPs 
+- name: Create Self IPs under the specific partition
+  bigip_selfip:
+    name: "{{ item.name }}"
+    address: "{{ item.address }}"
+    netmask: "{{ item.netmask }}"
+    partition: "{{ item.partition | upper }}"
+    vlan: "{{ item.vlan }}"
+    route_domain: "{{ item.rd_id }}"
+    allow_service: "{{ item.services }}"
+    state: "{{ item.state }}"
+    traffic_group: "{{ item.traffic_group }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  with_items: 
+    - "{{ selfip_local }}"
+    - "{{ selfip_float }}"
+  tags: selfip_bigip

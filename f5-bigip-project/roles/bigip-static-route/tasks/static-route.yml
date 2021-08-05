@@ -1,0 +1,21 @@
+---
+
+# Task to create static route with gateway address
+- name: Create static route with gateway address
+  bigip_static_route:
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    destination: "{{ item.destination }}"
+    netmask: "{{ item.netmask }}"
+    gateway_address: "{{ item.gateway_address }}"
+    partition: "{{ item.partition }}"
+    # mtu: "{{ item.mtu }}"
+    route_domain: "{{ item.route_domain }}"
+    state: "{{ item.state }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  with_items: "{{ static_route }}"
+  tags: static_route
+  
+  notify:
+    - Save the running configuration of the BIG-IP

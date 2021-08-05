@@ -1,0 +1,7 @@
+---
+# defaults file for bigip-sshd
+sshd_configs:
+  port: 22
+  inactivity_timeout: 600
+  log_level: info
+  login: enabled  

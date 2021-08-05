@@ -1,0 +1,13 @@
+---
+# tasks file for bigip-backup
+
+# Create and take a back up of F5 Big IP UCS file
+- name: create and download a new UCS
+  bigip_ucs_fetch:
+    backup: yes
+    src: "{{ item.filename }}"
+    dest: "{{ item.destination }}"
+    create_on_missing: yes 
+    provider: "{{ cli }}"
+  with_items: "{{ bigip_backup }}"
+  delegate_to: localhost

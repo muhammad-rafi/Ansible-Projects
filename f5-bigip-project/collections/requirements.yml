@@ -1,0 +1,7 @@
+---
+collections:
+  - name: f5networks.f5_modules
+    source: https://galaxy.ansible.com 
+    #source: https://galaxy.ansible.com/f5networks/f5_modules
+    version: 1.10.1
+

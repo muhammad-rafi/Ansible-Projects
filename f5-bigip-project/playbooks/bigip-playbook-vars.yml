@@ -1,0 +1,257 @@
+- name: F5 BIGIP PLAYBOOK WITH VARIABLES  
+  hosts: eve_bigip
+  gather_facts: false  
+  connection: local
+  collections: 
+    - f5networks.f5_modules
+    
+  vars:
+    cli:
+      server: "{{ inventory_hostname }}"
+      user: "{{ ansible_user }}"
+      password: "{{ ansible_pass }}"
+      server_port: "{{ port }}"
+      validate_certs: no
+
+  tasks:
+
+    - name: Create and download a new UCS backup file 
+      bigip_ucs_fetch:
+        backup: yes
+        src: "{{ item.filename }}"
+        dest: "{{ item.destination }}"
+        create_on_missing: yes 
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      with_items: "{{ bigip_backup }}"
+      tags: bigip_backup
+
+    - name: Create a new partition 
+      bigip_partition:
+        name: "{{ item.name | upper }}"
+        description: "{{ item.description | upper }}"
+        state: "{{ item.state }}"
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      with_items: "{{ partition }}"
+      tags: partition
+
+    - name: Create a new route domain 
+      bigip_routedomain: 
+        name: "{{ item.rd_name }}"
+        description: "{{ item.rd_decs }}"
+        partition: "{{ item.name | upper }}"
+        id: "{{ item.rd_id }}"
+        state: "{{ item.state }}"
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      with_items: "{{ partition }}"
+      tags: route_domain
+
+    - name: Attached a route domain to a previously created partition
+      bigip_partition:
+        name: "{{ item.name | upper }}"
+        route_domain: "{{ item.rd_id }}"
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      with_items: "{{ partition }}"
+      tags: attach_rd
+
+    - name: Create VLAN and tagged to the interface
+      bigip_vlan:
+        name: "{{ item.name }}"
+        partition: "{{ item.partition | upper }}"
+        tag: "{{ item.tag }}"
+        tagged_interface: "{{ item.tag_interface }}"
+        state: "{{ item.state }}"
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      with_items: "{{ vlan }}"
+      tags: vlan
+
+    - name: Create Self IP under the partition as traffic group local only 
+      bigip_selfip:
+        name: "{{ item.name }}"
+        address: "{{ item.address }}"
+        netmask: "{{ item.netmask }}"
+        partition: "{{ item.partition | upper }}"
+        vlan: "{{ item.vlan }}"
+        route_domain: "{{ item.rd_id }}"
+        allow_service: "{{ item.services }}"
+        state: "{{ item.state }}"
+        traffic_group: "{{ item.traffic_group }}"
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      with_items: "{{ selfip_local }}"
+      tags: selfip_local
+
+    - name: Create Self IP under the partition as traffic group floating 
+      bigip_selfip:
+        name: "{{ item.name }}"
+        address: "{{ item.address }}"
+        netmask: "{{ item.netmask }}"
+        partition: "{{ item.partition | upper }}"
+        vlan: "{{ item.vlan }}"
+        route_domain: "{{ item.rd_id }}"
+        allow_service: "{{ item.services }}"
+        state: "{{ item.state }}"
+        traffic_group: "{{ item.traffic_group }}"
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      with_items: "{{ selfip_float }}"
+      tags: selfip_float
+
+    - name: Create static route with gateway address
+      bigip_static_route:
+        destination: "{{ item.destination }}"
+        netmask: "{{ item.netmask }}"
+        gateway_address: "{{ item.gateway_address }}"
+        partition: "{{ item.partition | upper }}"
+        route_domain: "{{ item.route_domain }}"
+        state: "{{ item.state }}"
+        name: "{{ item.name }}"
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      with_items: "{{ static_route }}"
+      tags: static_route
+
+    - name: Create a pool and set monitors
+      bigip_pool:
+        state: "{{ item.state }}"
+        name: "{{ item.name }}"
+        description: "{{ item.description }}"
+        partition: "{{ item.partition | upper }}"
+        lb_method: "{{ item.lb_method }}"
+        # slow_ramp_time: "{{ item.slow_ramp_time }}"
+        # monitor_type: "{{ item.monitor_type }}"
+        # quorum: "{{ item.quorum }}"
+        monitors: "{{ item.monitors }}"
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      with_items: "{{ pool }}"
+      tags: pool
+
+    - name: Add pool members
+      bigip_pool_member:
+        state: "{{ item.state }}"
+        pool: "{{ item.pool }}"
+        partition: "{{ item.partition | upper }}"
+        host: "{{ item.address }}"
+        name: "{{ item.name }}"
+        port: "{{ item.port }}"
+        description: "{{ item.description }}"
+        # priority_group: "{{ item.priority_group }}"
+        # connection_limit: "{{ item.connection_limit }}"
+        # rate_limit: "{{ item.rate_limit }}"
+        # ratio: "{{ item.ratio }}"
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      with_items: "{{ pool_members }}"
+      tags: pool_members
+
+    - name: Create a Virtual Server
+      bigip_virtual_server:
+        state: "{{ item.state }}"
+        partition: "{{ item.partition | upper }}"
+        name: "{{ item.name }}"
+        description: "{{ item.description }}"
+        port: "{{ item.port }}"
+        destination: "{{ item.destination }}"
+        pool: "{{ item.pool }}"
+        snat: "{{ item.snat }}"
+        type: "{{ item.type }}"
+        source: "{{ item.source }}"
+        port_translation: "{{ item.port_translation }}"
+        # source_port: "{{ item.source_port }}"
+        # all_profiles: "{{ item.all_profiles }}"
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      with_items: "{{ virtual_server }}"
+      tags: virtual_server
+
+    - name: Create xforward HTTP profile
+      bigip_profile_http:
+        name: "{{ item.name }}"
+        insert_xforwarded_for: "{{ item.insert_xforwarded_for }}"
+        redirect_rewrite: "{{ item.redirect_rewrite }}"
+        partition: "{{ item.partition | upper }}"
+        state: "{{ item.state }}"
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      with_items: "{{ profile_http }}"
+      tags: http_x_forward
+
+    - name: Create a Persistence profile with src_addr 
+      bigip_profile_persistence_src_addr:
+        name: "{{ item.name }}"
+        state: "{{ item.state }}"
+        partition: "{{ item.partition | upper }}"
+        entry_timeout: "{{ item.entry_timeout }}"
+        parent: "{{ item.parent }}"
+        # hash_algorithm: "{{ item.hash_algorithm }}"
+        # match_across_services: "{{ item.match_across_services }}"
+        # match_across_virtuals: "{{ item.match_across_virtuals }}"
+        # mirror: "{{ item.mirror }}"
+        mask: "{{ item.mask }}"
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      with_items: "{{ profile_persist_src_addr }}"
+      tags: persist_src_addr
+
+    - name: Create a persistence cookie profile with expiration time
+      bigip_profile_persistence_cookie:
+        name: "{{ item.name }}"
+        # description: "{{ item.description }}"
+        cookie_name: "{{ item.cookie_name }}"
+        parent: "{{ item.parent }}"
+        state: "{{ item.state }}"
+        partition: "{{ item.partition }}"
+        # secure: yes
+        # update_password: always
+        # encrypt_cookie_pool_name: yes
+        # encryption_passphrase: somephrase
+        # always_send: yes
+        # cookie_encryption: disabled
+        cookie_method: "{{ item.cookie_method }}"
+        expiration: 
+          days: "{{ item.expiration.days }}"
+          hours: "{{ item.expiration.hours }}"
+          minutes: "{{ item.expiration.minutes }}"
+          seconds: "{{ item.expiration.seconds }}"
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      with_items: "{{ profile_persistence_cookie }}"
+      tags: cookie_profile
+
+    - name: Apply previously created profiles to a Virtual Server
+      bigip_virtual_server:
+        partition: "{{ item.partition | upper }}"
+        name: "{{ item.name }}"
+        profiles: "{{ item.profile }}"
+        default_persistence_profile: "{{ item.default_persist_profile }}"
+        fallback_persistence_profile: "{{ item.fallback_persist_profile }}"
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      with_items: "{{ virtual_server }}"
+      tags: apply_profiles
+
+    - name: Apply https redirect irule to a virtual server 
+      bigip_virtual_server:
+        name: "{{ item.name }}"
+        partition: "{{ item.partition | upper }}"
+        state: "{{ item.state }}"
+        irules:
+          - /Common/_sys_https_redirect
+        all_profiles:
+          - http
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      with_items: "{{ virtual_server }}"
+      tags: https_redirect_irule
+
+    - name: Save the running configuration of the BIG-IP
+      bigip_config:
+        save: yes
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: save_config

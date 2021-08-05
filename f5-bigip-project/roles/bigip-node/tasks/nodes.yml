@@ -1,0 +1,14 @@
+---
+
+# Task to create nodes 
+- name: Create nodes
+  bigip_node:
+    address: "{{ item.address }}"
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    partition: "{{ item.partition }}"
+    state: "{{ item.state }}"
+    provider: "{{ cli }}"
+  with_items: "{{ nodes }}"
+  delegate_to: localhost
+  tags: bigip_node

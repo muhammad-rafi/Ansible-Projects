@@ -1,0 +1,41 @@
+- name: CREATE F5 BIGIP VIP, POOL AND POOL MEMBERS
+  hosts: eve_bigip
+  gather_facts: false  
+  connection: local
+  collections: 
+    - f5networks.f5_modules
+    
+  vars:
+    cli:
+      server: "{{ inventory_hostname }}"
+      user: "{{ ansible_user }}"
+      password: "{{ ansible_pass }}"
+      server_port: "{{ port }}"
+      validate_certs: no
+
+  tasks:
+    - name: Get the failover state of the BIG-IP  
+      bigip_command:
+        provider: "{{ cli }}"
+        commands:
+          - show sys failover
+        wait_for:
+         - result[0] contains "Failover"
+      delegate_to: localhost
+      register: failover_state
+
+    - block:
+      - name: CONFIGURE POOL and VIP 
+        include_role: 
+          name: bigip-vip-pool
+
+      # Optional task, only required if you like to manually configuration sync 
+      # - name: Perform sync from active device to a group
+      #   bigip_configsync_action:
+      #     device_group: "{{ device_group.name }}"
+      #     sync_device_to_group: yes
+      #     provider: "{{ cli }}"
+      #   delegate_to: localhost
+
+      when: "'active' in failover_state.stdout[0]"
+      delegate_to: localhost

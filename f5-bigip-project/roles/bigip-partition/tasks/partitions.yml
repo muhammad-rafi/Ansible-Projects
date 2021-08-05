@@ -1,0 +1,12 @@
+---
+
+# Task to create partitions
+- name: Create a new partition 
+  bigip_partition:
+    name: "{{ item.name | upper }}"
+    description: "{{ item.description | upper }}"
+    state: "{{ item.state }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  with_items: "{{ partition }}"
+  tags: partition

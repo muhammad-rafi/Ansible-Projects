@@ -1,0 +1,20 @@
+---
+
+# Task to add pool members to a pool
+- name: Add pool members in a pool
+  bigip_pool_member:
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    host: "{{ item.host }}"
+    port: "{{ item.port }}"
+    pool: "{{ pool.name }}"
+    partition: "{{ item.partition | upper }}"
+    state: "{{ item.state }}"
+    # priority_group: "{{ item.priority_group }}"
+    # connection_limit: "{{ item.connection_limit }}"
+    # rate_limit: "{{ item.rate_limit }}"
+    # ratio: "{{ item.ratio }}"
+    provider: "{{ cli }}"
+  with_items: "{{ pool_members }}"
+  delegate_to: localhost
+  tags: pool_member

@@ -1,0 +1,21 @@
+---
+# defaults file for bigip-snmpv2
+snmpv2_communities:
+  - name: devnetv2c_ro
+    community: devnetv2c_ro
+    version: v2c
+    access: read-only
+    ip_version: '4'
+    # partition: Common
+    state: present 
+  - name: devnetv2c_rw
+    community: devnetv2c_rw
+    version: v2c
+    access: read-write
+    ip_version: '4'
+    state: present 
+    # partition: Common
+snmp_configs:
+  contact: DevNetBro
+  location: Birmingham, UK
+  

@@ -1,0 +1,19 @@
+- name: CREATE F5 BIGIP STATIC ROUTE
+  hosts: eve_bigip
+  gather_facts: false  
+  connection: local
+  collections: 
+    - f5networks.f5_modules
+    
+  vars:
+    cli:
+      server: "{{ inventory_hostname }}"
+      user: "{{ ansible_user }}"
+      password: "{{ ansible_pass }}"
+      server_port: "{{ port }}"
+      validate_certs: no
+
+  tasks:
+    - name: CONFIGURE BIGIP STATIC ROUTE
+      include_role: 
+        name: bigip-static-route

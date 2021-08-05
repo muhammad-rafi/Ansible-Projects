@@ -1,0 +1,51 @@
+---
+# defaults file for bigip-virtualserver
+# pool_name: web_pool
+
+pool_members:
+  - name: http_pool_member_1
+    description: http_pool_member_1
+    partition: TENANT_2
+    address: 192.168.20.11 # to change the IP of the pool member, delete and create new one
+    port: 80
+    state: enabled # change state to 'forced_offline' for disable and 'absent' to delete the pool member
+    # priority_group: 1
+    # connection_limit: 100
+    # rate_limit: 50
+    # ratio: 2
+
+  - name: http_pool_member_2
+    description: http_pool_member_2
+    partition: TENANT_2
+    address: 192.168.20.12
+    port: 80
+    state: enabled
+    # priority_group: 1
+    # connection_limit: 100
+    # rate_limit: 50
+    # ratio: 2
+
+pool:
+  name: httpserver_pool_1
+  description: httpserver_pool_1
+  partition: TENANT_2
+  lb_method: round-robin
+  state: present
+  # slow_ramp_time: 10
+  # monitor_type: single
+  # quorum: 1
+  monitors: ['/Common/gateway_icmp', '/Common/tcp']
+
+virtual_server:
+  - partition: TENANT_2
+    name: vritual_webserver_1
+    description: vritual_webserver_1
+    port: '80'
+    destination: 192.168.20.10
+    snat: Automap
+    type: standard
+    source: '0.0.0.0/0'
+    port_translation: yes
+    # source_port: "80"
+    # all_profiles: ['http', 'clientssl']
+    state: present

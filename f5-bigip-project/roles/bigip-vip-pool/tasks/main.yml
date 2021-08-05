@@ -1,0 +1,18 @@
+---
+
+# tasks file for bigip-virtualserver
+- name: Task to creata pool 
+  include_tasks: pools.yml
+  when:
+    - pool.name is defined
+
+- name: Task to add pool members in a pool
+  include_tasks: pool_members.yml
+  when:
+    - pool_members[0].name is defined
+
+- name: Task to create a Virtual Server
+  include_tasks: virtual_servers.yml
+  when:
+    - virtual_server is defined
+

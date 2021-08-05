@@ -1,0 +1,6 @@
+---
+# defaults file for bigip-backup
+
+bigip_backup:
+  - filename: "{{ inventory_hostname}}_backup.ucs"
+    destination: "~/f5-bigip-project/tmp/{{ inventory_hostname }}_backup.ucs"

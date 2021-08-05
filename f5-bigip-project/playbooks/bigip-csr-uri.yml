@@ -1,0 +1,92 @@
+- name: F5 BIGIP CSR Creation via URI Module  
+  hosts: eve_bigip
+  gather_facts: false  
+  connection: local
+  vars_prompt:
+    - name: username
+      prompt: "username"
+      private: no
+    - name: password
+      prompt: "password"
+
+  tasks:
+    - name: Create a CSR Key under specific partition
+      uri:
+        url: https://{{ inventory_hostname }}/mgmt/tm/sys/crypto/key
+        method: POST
+        user: "{{ username }}"
+        password: "{{ password }}"
+        body: |
+          {  
+           "name": "www.example.com.key",  
+           "keySize": "2048",  
+           "keyType": "rsa-private",  
+           "partition":"TENANT_2"
+           }
+        force_basic_auth: yes
+        status_code: 200
+        timeout: 300
+        body_format: json
+        validate_certs: no
+      ignore_errors: yes
+      register: bigip_key 
+      tags: bigip_key
+
+    - name: Create a CSR under specific partition
+      uri:
+        url: https://{{ inventory_hostname }}/mgmt/tm/sys/crypto/csr
+        method: POST
+        user: "{{ username }}"
+        password: "{{ password }}"
+        body: |
+          {  
+           "name": "www.example.com",  
+           "commonName": "www.example.com",  
+           "key": "www.example.com.key",  
+           "partition":"TENANT_2",
+           "organization": "TENANT_2",  
+           "ou": "Engineering",  
+           "city": "London",  
+           "state": "England",
+           "country": "UK",  
+           "email-address": "tenant2@example.com"
+           }
+        force_basic_auth: yes
+        status_code: 200
+        timeout: 300
+        body_format: json
+        validate_certs: no
+      ignore_errors: yes
+      register: bigip_csr
+      tags: bigip_csr
+
+    - name: Create a CSR Key and CSR under specific partition
+      uri:
+        url: https://{{ inventory_hostname }}/mgmt/tm/sys/crypto/key
+        method: POST
+        user: "{{ username }}"
+        password: "{{ password }}"
+        # body: "{{ lookup('file','payload.json') }}"
+        body: |
+          {  
+           "name": "www.example.com.key",  
+           "commonName": "www.example.com",  
+           "keySize": "2048",  
+           "keyType": "rsa-private",  
+           "partition":"TENANT_2",
+           "options": [{"gen-csr":"www.example.com"}],  
+           "organization": "TENANT_2",  
+           "ou": "Engineering",  
+           "city": "London",  
+           "state": "England",
+           "country": "UK",  
+           "email-address": "tenant2@example.com"
+           }
+        force_basic_auth: yes
+        status_code: 200
+        timeout: 300
+        body_format: json
+        validate_certs: no
+      ignore_errors: yes
+      register: bigip_csr_key 
+      tags: bigip_csr_key

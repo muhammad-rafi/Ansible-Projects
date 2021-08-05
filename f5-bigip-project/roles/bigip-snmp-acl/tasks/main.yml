@@ -1,0 +1,8 @@
+---
+# tasks file for bigip-snmp-acl
+- name: Set snmp allowed addresses
+  bigip_snmp:
+    allowed_addresses: "{{ snmp_configs.allowed_addresses }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  tags: bigip-snmp-acl

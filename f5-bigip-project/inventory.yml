@@ -1,0 +1,11 @@
+all:
+  children:
+    eve_bigip:
+      hosts:
+        eve-bigip01.devnetbro.com:
+        eve-bigip02.devnetbro.com:
+
+# inventory in .ini format
+#[eve_bigip]
+#eve-bigip01.devnetbro.com
+#eve-bigip02.devnetbro.com

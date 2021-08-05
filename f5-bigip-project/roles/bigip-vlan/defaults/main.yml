@@ -1,0 +1,15 @@
+---
+
+# defaults file for bigip-vlan
+vlan: 
+  - vlan_name: TENANT_2_VL20
+    description: TENANT_2_VL20
+    vlan_id: 20
+    tag_interface: 1.3
+    # untagged_interfaces: 1.3
+    # interfaces:
+    #   interface: 1.3
+    #   tagging: tagged
+    # mtu: 1500
+    partition: TENANT_2
+    state: present

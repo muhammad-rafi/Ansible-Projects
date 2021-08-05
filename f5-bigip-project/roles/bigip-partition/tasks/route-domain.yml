@@ -1,0 +1,14 @@
+---
+
+# Task to create route-domain
+- name: Create a new route domain 
+  bigip_routedomain: 
+    name: "{{ item.rd_name }}"
+    description: "{{ item.rd_decs }}"
+    partition: "{{ item.name | upper }}"
+    id: "{{ item.rd_id }}"
+    state: "{{ item.state }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  with_items: "{{ partition }}"
+  tags: route_domain

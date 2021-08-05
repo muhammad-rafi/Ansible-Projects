@@ -1,0 +1,11 @@
+---
+# tasks file for bigip-dns
+- name: Set the DNS settings on the BIG-IP
+  bigip_device_dns:
+    name_servers: "{{ name_servers.servers }}"
+    search: "{{ name_servers.domains }}"
+    cache: "{{ name_servers.cache }}"
+    ip_version: "{{ name_servers.ip_version }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  tags: bigip-dns

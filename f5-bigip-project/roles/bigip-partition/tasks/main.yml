@@ -1,0 +1,17 @@
+---
+# tasks file for bigip-partition
+- name: Task to create partitions
+  include_tasks: partitions.yml
+  when: 
+    - partition is defined
+
+- name: Task to create route-domain
+  include_tasks: route-domain.yml
+  when: 
+    - partition[0].rd_id is defined
+
+- name: Attached a route domain to a previously created partition
+  include_tasks: attached-rd.yml
+  when:
+    - partition is defined
+    - partition[0].rd_id is defined

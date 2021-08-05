@@ -1,0 +1,8 @@
+---
+# tasks file for bigip-sshd-acl
+- name: Set the SSHD service to run on port 22
+  bigip_device_sshd:
+    allow: "{{ sshd_configs.allow }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  tags: bigip-sshd-acl

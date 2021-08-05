@@ -1,0 +1,13 @@
+---
+# tasks file for bigip-snmpv2
+- name: Task to configure basic snmp configuration
+  include_tasks: snmp-basic-conf.yml
+  when: 
+    - snmp_configs.contact is defined
+    - snmp_configs.location is defined
+
+- name: Task to configure snmpv2 configuration
+  include_tasks: snmp-basic-conf.yml
+  when: 
+    - snmpv2_communities[0].community is defined
+

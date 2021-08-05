@@ -1,0 +1,26 @@
+---
+
+# Task to create a persistence cookie profile
+- name: Create a persistence cookie profile with expiration time
+  bigip_profile_persistence_cookie:
+    name: "{{ cookie_profile.name }}"
+    description: "{{ cookie_profile.description }}"
+    cookie_name: "{{ cookie_profile.cookie_name }}"
+    parent: "{{ cookie_profile.parent }}"
+    state: "{{ cookie_profile.state }}"
+    partition: "{{ cookie_profile.partition }}"
+    # secure: yes
+    # update_password: always
+    # encrypt_cookie_pool_name: yes
+    # encryption_passphrase: somephrase
+    # always_send: yes
+    # cookie_encryption: disabled
+    cookie_method: "{{ cookie_profile.cookie_method }}"
+    expiration: 
+      days: "{{ cookie_profile.expiration.days }}"
+      hours: "{{ cookie_profile.expiration.hours }}"
+      minutes: "{{ cookie_profile.expiration.minutes }}"
+      seconds: "{{ cookie_profile.expiration.seconds }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  tags: cookie_profile

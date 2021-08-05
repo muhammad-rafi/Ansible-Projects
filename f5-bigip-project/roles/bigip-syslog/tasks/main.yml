@@ -1,0 +1,11 @@
+---
+# tasks file for bigip-syslog
+- name: Add a remote syslog server on the BIG-IP
+  bigip_remote_syslog:
+    remote_host: "{{ item.host }}"
+    remote_port: "{{ item.port }}"
+    local_ip: "{{ item.local_ip }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  with_items: "{{ remote_host.hosts }}"
+  tags: bigip-syslog

@@ -1,0 +1,11 @@
+---
+# defaults file for bigip-dns
+name_servers:
+  servers:
+    - 192.168.56.3
+    - 192.168.56.4
+  domains: 
+    - devnetbro.com
+  cache: disabled
+  ip_version: 4
+  state: present 

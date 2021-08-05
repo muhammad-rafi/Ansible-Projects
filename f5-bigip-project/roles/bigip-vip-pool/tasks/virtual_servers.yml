@@ -1,0 +1,22 @@
+---
+
+# Task to create a virtual server 
+- name: Create a Virtual Server
+  bigip_virtual_server:
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    port: "{{ item.port }}"
+    destination: "{{ item.destination }}"
+    pool: "{{ pool.name }}"
+    snat: "{{ item.snat }}"
+    type: "{{ item.type }}"
+    source: "{{ item.source }}"
+    # source_port: "{{ item.source_port }}"
+    port_translation: "{{ item.port_translation }}"
+    # all_profiles: "{{ item.all_profiles }}"
+    partition: "{{ item.partition | upper }}"
+    state: "{{ item.state }}"
+    provider: "{{ cli }}"
+  with_items: "{{ virtual_server }}"
+  delegate_to: localhost
+  tags: virtual_server

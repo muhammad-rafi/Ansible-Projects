@@ -1,0 +1,25 @@
+---
+# defaults file for bigip-selfip
+selfip_local:
+  # traffic group local only
+  - traffic_group: /Common/traffic-group-local-only
+    name: "192.168.20.2"
+    address: 192.168.20.2
+    netmask: 255.255.255.0
+    vlan: TENANT_2_VL20
+    rd_id: 2
+    partition: TENANT_2
+    services: default 
+    state: present
+
+selfip_float:
+    # traffic group floating 
+  - traffic_group: /Common/traffic-group-1
+    name: "192.168.20.1"
+    address: 192.168.20.1
+    netmask: 255.255.255.0
+    vlan: TENANT_2_VL20
+    rd_id: 2
+    partition: TENANT_2
+    services: default 
+    state: present

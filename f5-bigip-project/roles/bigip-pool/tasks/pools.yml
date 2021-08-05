@@ -1,0 +1,18 @@
+---
+
+# Task to create a pool
+- name: Create a pool and set monitors
+  bigip_pool:
+    name: "{{ pool.name }}"
+    description: "{{ pool.description }}"
+    partition: "{{ pool.partition | upper }}"
+    lb_method: "{{ pool.lb_method }}"
+    state: "{{ pool.state }}"
+    # slow_ramp_time: "{{ item.slow_ramp_time }}"
+    # monitor_type: "{{ item.monitor_type }}"
+    # quorum: "{{ item.quorum }}"
+    monitors: "{{ pool.monitors }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  tags: bigip_node
+  

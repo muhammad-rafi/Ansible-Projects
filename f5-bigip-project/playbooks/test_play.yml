@@ -1,0 +1,40 @@
+- name: F5 BIGIP BASIC CONFIGURATION PLAYBOOK 
+  hosts: eve_bigip
+  gather_facts: false  
+  connection: local
+  collections: 
+    - f5networks.f5_modules
+  
+  vars:
+    cli:
+      server: "{{ inventory_hostname }}"
+      user: "{{ ansible_user }}"
+      password: "{{ ansible_pass }}"
+      server_port: "{{ port }}"
+      validate_certs: no
+
+
+  tasks:
+    - name: Get the failover state of the BIG-IP  
+      bigip_command:
+        provider: "{{ cli }}"
+        commands:
+          - show sys failover
+        wait_for:
+         - result[0] contains "Failover"
+      delegate_to: localhost
+      register: failover_state
+
+    # - name: Display the failover state of both BIG-IP members 
+    #   debug: 
+    #     msg: "{{ failover_state }}"
+
+    - block:
+      - name: Set hostname 
+        debug:
+          msg: "Equals"
+      when: "'active' in failover_state.stdout[0]"
+      delegate_to: localhost
+
+
+    

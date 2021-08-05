@@ -1,0 +1,7 @@
+---
+
+# tasks file for bigip-node
+- name: Task to create nodes
+  include_tasks: nodes.yml
+  when:
+    - nodes is defined 

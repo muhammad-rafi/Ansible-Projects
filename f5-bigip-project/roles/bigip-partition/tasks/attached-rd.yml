@@ -1,0 +1,11 @@
+---
+
+# Task to attached a route domain to a partition
+- name: Attached a route domain to a previously created partition
+  bigip_partition:
+    name: "{{ item.name | upper }}"
+    route_domain: "{{ item.rd_id }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  with_items: "{{ partition }}"
+  tags: attached_rd

@@ -1,0 +1,9 @@
+---
+# tasks file for bigip-sshd-banner
+- name: Set the sshd banner for the BIG-IP
+  bigip_device_sshd:
+    banner: "{{ bigip_banner.status }}"
+    banner_text: "{{ bigip_banner.text }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  tags: bigip-ssh-banner

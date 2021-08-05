@@ -1,0 +1,8 @@
+---
+
+# tasks file for bigip-selfip
+- name: Task to create Self IPs 
+  include_tasks: self-ips.yml
+  when:
+    - selfip_local is defined
+    - selfip_float is defined

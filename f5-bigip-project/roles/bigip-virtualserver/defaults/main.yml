@@ -1,0 +1,21 @@
+---
+# defaults file for bigip-virtualserver
+virtual_server:
+  - name: vritual_webserver_1
+    description: vritual_webserver_1
+    source: 0.0.0.0/0
+    destination: 192.168.20.20
+    port: 80
+    pool: httpserver_pool_1
+    partition: TENANT_2
+    snat: Automap
+    state: present
+    # type: standard
+    # port_translation: yes
+    # default_persist_profile: src_persistence
+    # profile:
+    #   - x_forward
+    # source_port: "80"
+    # all_profiles:
+    #   - http
+    #   - clientssl

@@ -1,0 +1,69 @@
+# Variable file for BIG-IP HA Setup 
+---
+
+initial_setup: no
+bigip_username: admin
+bigip_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          62313665373164656632386331326261666137653831353839623736656535343361316430303134
+          6664613335383535333232393364636265326434386131330a666533653130366266663961333438
+          61373634393235343263336262333766386232373734373666663665623263313831373233643465
+          3964353333386165340a396236336663636338666265343337363639383562313764303731636263
+          6236
+validate_certs: false
+bigip01: eve-bigip01.devnetbro.com
+bigip02: eve-bigip02.devnetbro.com
+
+bigip_member1:
+  master: true
+  bigip_name: eve-bigip01.devnetbro.com
+  bigip_host: 192.168.56.11
+  # bigip_username: "{{ bigip_username }}"
+  # bigip_password: "{{ bigip_password }}"
+  # validate_certs: "{{ validate_certs }}"
+  bigip_ha_vlan:
+    name: "HA-VLAN"
+    vlan_id: "172"
+    interface: "1.1"
+  bigip_ha_selfip: 
+    name: "HA-SELF-IP"
+    address: 172.16.1.2
+    netmask: 255.255.255.248
+    vlan: "HA-VLAN"
+  device_group:
+    name: HA-DEVICE-GROUP
+    description: HA-DEVICE-GROUP
+    auto_sync: no
+    save_on_auto_sync: no
+    type: "sync-failover"
+    network_failover: yes 
+    full_sync : no 
+    max_incremental_sync_size: 1024
+    state: present 
+
+bigip_member2:
+  master: false
+  bigip_name: eve-bigip02.devnetbro.com
+  bigip_host: 192.168.56.12
+  # bigip_username: "{{ bigip_username }}"
+  # bigip_password: "{{ bigip_password }}"
+  # validate_certs: "{{ validate_certs }}"
+  bigip_ha_vlan:
+    name: "HA-VLAN"
+    vlan_id: "172"
+    interface: "1.1"
+  bigip_ha_selfip: 
+    name: "HA-SELF-IP"
+    address: 172.16.1.3
+    netmask: 255.255.255.248
+    vlan: "HA-VLAN"
+  device_group:
+    name: HA-DEVICE-GROUP
+    description: HA-DEVICE-GROUP
+    auto_sync: no
+    save_on_auto_sync: no
+    type: "sync-failover"
+    network_failover: yes 
+    full_sync : no 
+    max_incremental_sync_size: 1024
+    state: present 

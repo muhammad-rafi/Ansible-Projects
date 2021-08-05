@@ -1,0 +1,9 @@
+---
+# tasks file for roles/bigip-static-route
+- name: Task to create static route with gateway address
+  include_tasks: static-route.yml
+  when:
+    - static_route[0].destination is defined
+    - static_route[0].netmask is defined
+    - static_route[0].gateway_address is defined
+

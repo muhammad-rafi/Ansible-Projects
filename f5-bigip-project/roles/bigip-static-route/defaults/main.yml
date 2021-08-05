@@ -1,0 +1,12 @@
+---
+# defaults file for roles/bigip-static-route
+static_route:
+  - name: default_route 
+    description: default_route
+    destination: 0.0.0.0
+    netmask: 0.0.0.0
+    gateway_address: 192.168.20.254
+    partition: TENANT_2
+    # mtu: '1500'
+    route_domain: 2
+    state: present 

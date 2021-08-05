@@ -1,0 +1,135 @@
+---
+
+# F5 BIG-IP Initial configuration variables 
+initial_setup: "no"
+
+# Variable for bigip-basic-config.yml playbook
+# bigip_name: eve-bigip01.devnetbro.com
+
+timezone: UTC
+
+users:
+  - username: devnetbro
+    password: myP@ssw0rd
+    full_name: Devnet Bro
+    partition: Common
+    access: all:admin # Parition:Role
+    update_password: always
+    shell: bash # choices: tmsh, bash, none
+    state: present
+
+ntp_servers:
+  servers:
+    - 192.168.56.9
+    - 192.168.56.10
+  state: present 
+
+name_servers:
+  servers:
+    - 192.168.56.3
+    - 192.168.56.4
+  domains: 
+    - devnetbro.com
+  cache: disabled
+  ip_version: 4
+  state: present 
+
+remote_host:
+  hosts:
+    - host: 192.168.56.5
+      port: '514'
+      local_ip: none
+    - host: 192.168.56.6
+      port: '514'
+      local_ip: none
+  state: present
+
+# device_name: "{{ inventory_hostname[0:11] }}"
+
+bigip_banner:
+  status: enabled
+  text: |
+    ****************************************************** 
+    **            "{{ inventory_hostname[0:11] }}"/"{{ inventory_hostname[0:11] }}"               **
+    **             F5 vBIG-IP - 15.1.2.1                **
+    **  Login Required. If you have not been provided   **
+    **     with permission to access this device,       **  
+    **            disconnect immediately!               **
+    **       Unauthorized access is prohibited.         **
+    **                                                  ** 
+    ****************************************************** 
+  state: present
+
+sshd_configs:
+  port: 22
+  inactivity_timeout: 600
+  log_level: info
+  login: enabled  
+  # allow: all
+  allow: all
+   - '0.0.0.0/0'
+   - 1.1.1.1
+   - 2.2.2.2
+   - 3.3.3.3
+   - 127.0.0.0/8
+  state: present 
+
+snmp_configs:
+  contact: DevNetBro
+  location: Birmingham, UK
+  allowed_addresses:
+    - 1.1.1.1
+    - 2.2.2.2
+    - 3.3.3.3
+    - '127.0.0.0/8'
+  state: present 
+
+snmpv2_communities:
+  - name: devnetv2c_ro
+    community: devnetv2c_ro
+    version: v2c
+    access: read-only
+    ip_version: '4'
+    # partition: Common
+    state: present 
+  - name: devnetv2c_rw
+    community: devnetv2c_rw
+    version: v2c
+    access: read-write
+    ip_version: '4'
+    state: present 
+    # partition: Common
+
+snmpv3_users:
+  - version: v3
+    name: devnebro_ro
+    snmp_username: devnebro_ro
+    snmp_auth_protocol: sha
+    snmp_auth_password: devnetbroro
+    snmp_privacy_protocol: aes
+    snmp_privacy_password: devnetbroro
+    oid: .1
+    access: ro
+    state: present
+  - version: v3
+    name: devnebro_rw
+    snmp_username: devnetbro_rw
+    snmp_auth_protocol: md5
+    snmp_auth_password: devnetbrorw
+    snmp_privacy_protocol: des
+    snmp_privacy_password: devnetbrorw
+    oid: null
+    access: rw
+    state: present
+
+device_group:
+  name: HA-DEVICE-GROUP
+  description: HA-DEVICE-GROUP
+  auto_sync: no
+  save_on_auto_sync: no
+  type: "sync-failover"
+  network_failover: yes 
+  full_sync : no 
+  max_incremental_sync_size: 1024
+  state: present 
+

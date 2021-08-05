@@ -1,0 +1,9 @@
+---
+# tasks file for bigip-ntp
+- name: Set NTP server and timezone for the BIG-IP
+  bigip_device_ntp:
+    timezone: "{{ timezone }}"
+    ntp_servers: "{{ ntp_server.servers }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  tags: bigip-ntp

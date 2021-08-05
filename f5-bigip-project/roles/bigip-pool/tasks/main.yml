@@ -1,0 +1,13 @@
+---
+# tasks file for bigip-pool
+- name: Task to create a pool
+  include_tasks: pools.yml
+  when:
+    - pool.name is defined
+
+- name: Task to add pool members to a pool
+  include_tasks: pool_members.yml
+  when:
+    - pool_members[0].name is defined
+    - pool_members[0].host is defined
+    - pool_members[0].port is defined

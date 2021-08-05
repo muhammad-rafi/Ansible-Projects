@@ -1,0 +1,73 @@
+- name: F5 BIGIP CSR Creation
+  hosts: eve_bigip
+  gather_facts: false  
+  connection: local
+  collections: 
+    - f5networks.f5_modules
+    
+  vars:
+    cli:
+      server: "{{ inventory_hostname }}"
+      user: "{{ ansible_user }}"
+      password: "{{ ansible_pass }}"
+      server_port: "{{ port }}"
+      validate_certs: no
+
+  tasks:
+
+    # Create a CSR key for a specific partition -- New modules is being built 
+    # - name: Create an SSL csr key
+    #   bigip_csr_key:
+    #     key_name: www.example.com.key
+    #     common_name: www.example.com
+    #     keySize: '2048'
+    #     keyType: rsa-keyType
+    #     partition: TENANT_1
+    #     organization: devnetbro
+    #     ou: Technology
+    #     city: Birmingham
+    #     state: England
+    #     country: UK
+    #     emailAddress: muhammad.rafi@example.com
+    #     provider: "{{ cli }}"
+    #   delegate_to: localhost
+
+
+    # Create and download a CSR -- needs to be fixed 
+    # - name: Create and download SSL CSR
+    #   bigip_ssl_csr:
+    #     name: www.example.com
+    #     key_name: www.example.com.key
+    #     common_name: www.example.com
+    #     partition: TENANT_1
+    #     organization: devnetbro
+    #     ou: Operations
+    #     city: Birmingham
+    #     province: England # it is ignoring this as 'state' is conflicting with the 'state' for Ansible 
+    #     country: UK
+    #     email_address: muhammad.rafi@example.com
+    #     # challenge_password: abcd12345
+    #     dest: ~/f5-bigip-project/tmp/www.example.com
+    #     # force: yes
+    #     state: present 
+    #     provider: "{{ cli }}"
+    #   delegate_to: localhost
+
+    # - name: Generate an OpenSSL Certificate Signing Request with a passphrase protected private key
+    #   community.crypto.openssl_csr:
+    #     path: /etc/ssl/csr/www.ansible.com.csr
+    #     privatekey_path: /etc/ssl/private/ansible.com.pem
+    #     privatekey_passphrase: ansible
+    #     common_name: www.ansible.com
+
+    # - name: Generate an OpenSSL Certificate Signing Request with Subject information
+    #   community.crypto.openssl_csr:
+    #     path: ~/f5-bigip-project/tmp/www.example1.com.csr
+    #     privatekey_path: /etc/ssl/private/ansible.com.pem
+    #     country_name: UK
+    #     organization_name: Customer4
+    #     email_address: jdoe@ansible.com
+    #     common_name: www.example1.com
+
+  # https://docs.ansible.com/ansible/latest/collections/community/crypto/index.html
+  

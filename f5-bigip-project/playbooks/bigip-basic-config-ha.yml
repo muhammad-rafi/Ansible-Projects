@@ -1,0 +1,182 @@
+- name: F5 BIGIP BASIC CONFIGURATION PLAYBOOK WITH HA ACTIVE/STANDBY
+  hosts: eve_bigip
+  gather_facts: false  
+  connection: local
+  collections: 
+    - f5networks.f5_modules
+
+  vars_files:
+    - bigip_basic_vars_file.yml
+    
+  vars:
+    cli:
+      server: "{{ inventory_hostname }}"
+      user: "{{ ansible_user }}"
+      password: "{{ ansible_pass }}"
+      server_port: "{{ port }}"
+      validate_certs: no
+
+  tasks:
+    # - name: Get failover state via shell command # "Ansible controller server must have ssh access to the Bigip"
+    #   shell: tmsh show sys failover | awk '{print $2}'
+    #   register: failover_state
+
+    # - name: Display the failover state of both BIG-IP members 
+    #   debug: 
+    #     msg: "{{ failover_state.stdout }}"
+
+    - name: Get the failover state of the BIG-IP  
+      bigip_command:
+        provider: "{{ cli }}"
+        commands:
+          - show sys failover
+        wait_for:
+         - result[0] contains "Failover"
+      delegate_to: localhost
+      register: failover_state
+   
+    # DO NOT RUN THIS MODULE AFTER HA IS SETUP, ONLY FOR DAY0 CONFIG
+    - name: Set the hostname of the BIG-IP
+      bigip_hostname:
+        hostname: "{{ bigip_name }}"
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: bigip-hostname
+      when: '"yes" in initial_setup'
+
+    - block:
+      - name: Add the user 'devnetbro' as an admin for all partitions
+        bigip_user:
+          username_credential: "{{ item.username }}"
+          password_credential: "{{ item.password }}"
+          full_name: "{{ item.full_name }}"
+          partition: "{{ item.partition }}"
+          partition_access: "{{ item.access }}" # Parition:Role
+          update_password: "{{ item.update_password }}"
+          shell: "{{ item.shell }}" # choices: tmsh, bash, none
+          state: "{{ item.state }}"
+          provider: "{{ cli }}"
+        delegate_to: localhost
+        with_items: "{{ users }}"
+        tags: bigip-user
+
+      - name: Set NTP server and timezone for the BIG-IP
+        bigip_device_ntp:
+          timezone: "{{ timezone }}"
+          ntp_servers: "{{ ntp_servers.servers }}"
+          provider: "{{ cli }}"
+        delegate_to: localhost
+        tags: bigip-ntp
+
+      - name: Set the DNS settings on the BIG-IP
+        bigip_device_dns:
+          name_servers: "{{ name_servers.servers }}"
+          search: "{{ name_servers.domains }}"
+          cache: "{{ name_servers.cache }}"
+          ip_version: "{{ name_servers.ip_version }}"
+          provider: "{{ cli }}"
+        delegate_to: localhost
+        tags: bigip-dns
+
+      - name: Add a remote syslog server on the BIG-IP
+        bigip_remote_syslog:
+          remote_host: "{{ item.host }}"
+          remote_port: "{{ item.port }}"
+          local_ip: "{{ item.local_ip }}"
+          provider: "{{ cli }}"
+        delegate_to: localhost
+        with_items: "{{ remote_host.hosts }}"
+        tags: bigip-syslog
+
+      - name: Set the SSHD service to run on port 22
+        bigip_device_sshd:
+          port: "{{ sshd_configs.port }}"
+          allow: "{{ sshd_configs.allow }}"
+          inactivity_timeout: "{{ sshd_configs.inactivity_timeout }}"
+          log_level: "{{ sshd_configs.log_level }}"
+          login: "{{ sshd_configs.login }}"
+          provider: "{{ cli }}"
+        delegate_to: localhost
+        tags: bigip-sshd
+
+      - name: Set the sshd banner for the BIG-IP
+        bigip_device_sshd:
+          banner: "{{ bigip_banner.status }}"
+          banner_text: "{{ bigip_banner.text }}"
+          provider: "{{ cli }}"
+        delegate_to: localhost
+        tags: bigip-ssh-banner
+
+      - name: Set the UI Login banner for the BIG-IP
+        bigip_sys_global:
+          security_banner: yes
+          banner_text: "{{ bigip_banner.text }}"
+          provider: "{{ cli }}"
+          state: "{{ bigip_banner.state }}"
+        delegate_to: localhost
+        tags: bigip-ui-banner
+
+      - name: Set snmp contact, location and allowed addresses
+        bigip_snmp:
+          contact: "{{ snmp_configs.contact }}"
+          location: "{{ snmp_configs.location }}"
+          allowed_addresses: "{{ snmp_configs.allowed_addresses }}"
+          provider: "{{ cli }}"
+        delegate_to: localhost
+        tags: bigip-snmp-base
+
+      - name: Create SMNP v2c read-only and read-write communities
+        bigip_snmp_community:
+          name: "{{ item.name }}"
+          community: "{{ item.community }}"
+          version: "{{ item.version }}"
+          access: "{{ item.access }}"
+          ip_version: "{{ item.ip_version }}"
+          # partition: "{{ item.partition }}"
+          state: "{{ item.state }}"
+          provider: "{{ cli }}"
+        delegate_to: localhost
+        with_items: "{{ snmpv2_communities }}"
+        tags: bigip-snmp-community
+
+      - name: Create SMNP v3 read-only and read-write community
+        bigip_snmp_community:
+          version: "{{ item.version }}"
+          name: "{{ item.name }}"
+          snmp_username: "{{ item.snmp_username }}"
+          snmp_auth_protocol: "{{ item.snmp_auth_protocol }}"
+          snmp_auth_password: "{{ item.snmp_auth_password }}"
+          snmp_privacy_protocol: "{{ item.snmp_privacy_protocol }}"
+          snmp_privacy_password: "{{ item.snmp_privacy_password }}"
+          oid: "{{ item.oid }}"
+          access: "{{ item.access }}"
+          state: "{{ item.state }}"
+          provider: "{{ cli }}"
+        delegate_to: localhost
+        with_items: "{{ snmpv3_users }}"
+        tags: bigip-snmpv3
+
+        notify:
+          - Save the running configuration of the BIG-IP
+          - Sync configuration from device to the group
+
+      when: "'active' in failover_state.stdout[0]"
+      delegate_to: localhost
+
+  handlers:
+
+    - name: Save the running configuration of the BIG-IP
+      bigip_config:
+        provider: "{{ cli }}"
+        save: yes
+      delegate_to: localhost
+      tags: save-config
+
+    - name: Sync configuration from device to the group
+      bigip_configsync_action:
+        provider: "{{ cli }}"
+        device_group: "{{ device_group.name }}"
+        sync_device_to_group: yes
+      delegate_to: localhost
+      tags: sync-config
+

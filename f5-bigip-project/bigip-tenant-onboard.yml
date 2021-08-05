@@ -1,0 +1,36 @@
+- name: F5 BIGIP Customer on-boarding playbook 
+  hosts: eve_bigip
+  gather_facts: false  
+  connection: local
+  collections: 
+    - f5networks.f5_modules
+    
+  vars:
+    cli:
+      server: "{{ inventory_hostname }}"
+      user: "{{ ansible_user }}"
+      password: "{{ ansible_pass }}"
+      server_port: "{{ port }}"
+      validate_certs: no
+
+  tasks:
+    - name: CONFIGURE PARTITION 
+      include_role: 
+        name: bigip-partition
+
+    - name: CONFIGURE VLAN 
+      include_role: 
+        name: bigip-vlan
+
+    - name: CONFIGURE SELF IPs 
+      include_role: 
+        name: bigip-selfip
+
+    - name: CONFIGURE STATIC ROUTE 
+      include_role: 
+        name: bigip-static-route
+
+
+
+
+  

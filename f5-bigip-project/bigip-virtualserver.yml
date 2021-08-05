@@ -1,0 +1,19 @@
+- name: Create F5 BIGIP VIRTUAL SERVER
+  hosts: eve_bigip
+  gather_facts: false  
+  connection: local
+  collections: 
+    - f5networks.f5_modules
+    
+  vars:
+    cli:
+      server: "{{ inventory_hostname }}"
+      user: "{{ ansible_user }}"
+      password: "{{ ansible_pass }}"
+      server_port: "{{ port }}"
+      validate_certs: no
+
+  tasks:
+    - name: CONFIGURE BIGIP VIRTUAL SERVER
+      include_role: 
+        name: bigip-virtualserver

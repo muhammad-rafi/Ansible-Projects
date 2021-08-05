@@ -1,0 +1,24 @@
+---
+# defaults file for bigip-node
+nodes:
+  - name: http_pool_member_1
+    description: http_pool_member_1
+    address: 192.168.20.21 # to change the IP of the pool member, delete and create new one
+    partition: TENANT_2
+    state: enabled # change state to 'forced_offline' for disable and 'absent' to delete the pool member
+    # fqdn : httpwebserver1.example.com
+    # connection_limit: 100
+    # rate_limit: 50
+    # ratio: 2
+    # monitors: Node Default
+  
+  - name: http_pool_member_2
+    description: http_pool_member_2
+    address: 192.168.20.22
+    partition: TENANT_2
+    state: enabled
+    # fqdn : httpwebserver2.example.com
+    # connection_limit: 100
+    # rate_limit: 50
+    # ratio: 2
+    # monitors: Node Default

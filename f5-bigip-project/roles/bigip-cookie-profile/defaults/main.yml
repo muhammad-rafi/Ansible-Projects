@@ -1,0 +1,30 @@
+---
+
+# defaults file for bigip-cookie-profile
+cookie_profile:
+  name: cookie_persistence_profile
+  description: cookie for customer
+  cookie_name: customer_cookie
+  parent: /Common/cookie
+  state: present 
+  partition: TENANT_1
+  # secure: yes
+  # update_password: always
+  # encrypt_cookie_pool_name: yes
+  # encryption_passphrase: somephrase
+  # always_send: yes
+  # cookie_encryption: disabled
+  cookie_method: insert
+  expiration:
+    days: 7
+    hours: 12
+    minutes: 30
+    seconds: 0 
+
+virtual_server:
+  name: virtual_server_1
+  partition: TENANT_1
+  default_persist_profile: cookie_persistence_profile 
+  fallback_persist_profile: null
+
+ 

@@ -1,0 +1,11 @@
+---
+# defaults file for bigip-users
+users:
+  - username: devnetbro
+    password: p@55w0rD!23
+    full_name: Devnet Bro
+    partition: Common
+    access: all:admin # Parition:Role
+    update_password: always
+    shell: bash # choices: tmsh, bash, none
+    state: present

@@ -1,0 +1,161 @@
+---
+
+ansible_host: 192.168.56.11
+# bigip_name: eve-bigip01.devnetbro.com
+
+# bigip_backup:
+#   - filename: "{{ inventory_hostname}}_backup.ucs"
+#     destination: "~/f5-bigip-project/tmp/{{ inventory_hostname }}_backup.ucs"
+    
+# device_group:
+#   name: HA-DEVICE-GROUP
+#   description: HA-DEVICE-GROUP
+#   auto_sync: no
+#   save_on_auto_sync: no
+#   type: "sync-failover"
+#   network_failover: yes 
+#   full_sync : no 
+#   max_incremental_sync_size: 1024
+#   state: present 
+    
+# partition: 
+#   - name: TENANT_1
+#     description: TENANT_1
+#     rd_id: 1
+#     rd_name: 1
+#     rd_decs: TENANT_1
+#     state: present
+
+# vlan: 
+#   - vlan_name: TENANT_1_VL10
+#     description: TENANT_1_VL10
+#     vlan_id: 10
+#     tag_interface: 1.3
+#     # untagged_interfaces: 1.3
+#     partition: TENANT_1 
+#     state: present
+
+# selfip_local:
+#   - traffic_group: /Common/traffic-group-local-only
+#     name: "192.168.10.2"
+#     address: 192.168.10.2
+#     netmask: 255.255.255.0
+#     vlan: TENANT_1_VL10
+#     rd_id: 1
+#     partition: TENANT_1
+#     services: default 
+#     state: present
+
+# selfip_float:
+#   - traffic_group: /Common/traffic-group-1
+#     name: "192.168.10.1"
+#     address: 192.168.10.1
+#     netmask: 255.255.255.0
+#     vlan: TENANT_1_VL10
+#     rd_id: 1
+#     partition: TENANT_1
+#     services: default 
+#     state: present
+
+# static_route:
+#   - name: default_route 
+#     description: default_route
+#     destination: 0.0.0.0
+#     netmask: 0.0.0.0
+#     gateway_address: 192.168.10.254
+#     partition: TENANT_1
+#     route_domain: 1
+#     state: present 
+
+# pool:
+#   name: webserver_pool_1
+#   description: webserver_pool
+#   partition: TENANT_1
+#   lb_method: round-robin
+#   state: present
+#   # slow_ramp_time: 10
+#   # monitor_type: single
+#   # quorum: 1
+#   monitors: ['/Common/gateway_icmp', '/Common/tcp']
+
+# pool_members:
+#   - name: webserver_pool_mem_1
+#     description: webserver_pool_mem_1
+#     pool: webserver_pool_1
+#     partition: TENANT_1
+#     address: 192.168.10.21 # to change the IP of the pool member, delete and create new one
+#     port: 80
+#     state: enabled # change state to 'forced_offline' for disable and 'absent' to delete the pool member
+#     # priority_group: 1
+#     # connection_limit: 100
+#     # rate_limit: 50
+#     # ratio: 2
+  
+#   - name: webserver_pool_mem_2
+#     description: webserver_pool_mem_2
+#     pool: webserver_pool_1
+#     partition: TENANT_1
+#     address: 192.168.10.22
+#     port: 80
+#     state: enabled
+#     # priority_group: 1
+#     # connection_limit: 100
+#     # rate_limit: 50
+#     # ratio: 2
+
+# profile_http:
+#   - name: x_forward
+#     insert_xforwarded_for: yes
+#     redirect_rewrite: none
+#     partition: TENANT_1
+#     state: present
+
+# profile_persist_src_addr:
+#   - name: src_persistence
+#     state: present
+#     partition: TENANT_1
+#     entry_timeout: "300"
+#     parent: source_addr
+#     # hash_algorithm: carp
+#     # match_across_services: yes
+#     # match_across_virtuals: yes
+#     # mirror: yes
+#     mask: 255.255.255.255
+
+# profile_persistence_cookie:
+#   - name: cookie_persistence_profile
+#     description: cookie for customer
+#     cookie_name: customer_cookie
+#     parent: /Common/cookie
+#     state: present 
+#     partition: TENANT_1
+#     # secure: yes
+#     # update_password: always
+#     # encrypt_cookie_pool_name: yes
+#     # encryption_passphrase: somephrase
+#     # always_send: yes
+#     # cookie_encryption: disabled
+#     cookie_method: insert
+#     expiration:
+#       days: 7
+#       hours: 12
+#       minutes: 30
+#       seconds: 0
+
+# virtual_server:
+#   - partition: TENANT_1
+#     name: vs_webserver_1
+#     description: vs_webserver_1
+#     port: '8080'
+#     destination: 192.168.10.20
+#     pool: webserver_pool
+#     snat: Automap
+#     type: standard
+#     source: '0.0.0.0/0'
+#     port_translation: yes
+#     default_persist_profile: src_persistence 
+#     fallback_persist_profile: cookie_persistence_profile
+#     profile: ['x_forward']
+#     # source_port: "80"
+#     # all_profiles: ['http','clientssl','oneconnect']
+#     state: present

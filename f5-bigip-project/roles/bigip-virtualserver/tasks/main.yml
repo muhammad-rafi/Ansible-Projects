@@ -1,0 +1,8 @@
+---
+
+# tasks file for bigip-virtualserver
+- name: Task to create a virtual server 
+  include_tasks: virtual-server.yml
+  when: 
+    - virtual_server[0].name is defined
+    

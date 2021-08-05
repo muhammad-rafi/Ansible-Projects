@@ -1,0 +1,29 @@
+- name: F5 BIGIP ROOLBOOK 
+  hosts: eve_bigip
+  gather_facts: false  
+  connection: local
+  # collections: 
+  #   - f5networks.f5_modules
+    
+  vars:
+    cli:
+      server: "{{ inventory_hostname }}"
+      user: "{{ ansible_user }}"
+      password: "{{ ansible_pass }}"
+      server_port: "{{ port }}"
+      validate_certs: no
+
+  roles:
+    # - bigip-users
+    # - bigip-backup
+    # - bigip-partition
+    # - bigip-vlan
+    # - bigip-selfip
+    - bigip-static-route
+    # - bigip-vip-pool
+    # - bigip-node
+    # - bigip-pool
+    # - bigip-virtualserver
+    # - bigip-persist-profile
+    # - bigip-cookie-profile
+    # - bigip-https-redirect-irule

@@ -1,0 +1,12 @@
+---
+
+# tasks file for bigip-cookie-profile
+- name: Task to create a persistence cookie profile
+  include_tasks: cookie-profile.yml
+  when:
+    - cookie_profile.name is defined
+
+- name: Task to apply cookie profile to a Virtual Server
+  include_tasks: apply-cookie.yml
+  when:
+    - virtual_server.name is defined

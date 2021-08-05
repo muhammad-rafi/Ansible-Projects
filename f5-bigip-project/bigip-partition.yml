@@ -1,0 +1,20 @@
+- name: CREATE F5 BIGIP PARTITION
+  hosts: eve_bigip
+  gather_facts: false  
+  connection: local
+  collections: 
+    - f5networks.f5_modules
+    
+  vars:
+    cli:
+      server: "{{ inventory_hostname }}"
+      user: "{{ ansible_user }}"
+      password: "{{ ansible_pass }}"
+      server_port: "{{ port }}"
+      validate_certs: no
+
+  tasks:
+    - name: CONFIGURE BIGIP PARTITION
+      include_role: 
+        name: bigip-partition
+        

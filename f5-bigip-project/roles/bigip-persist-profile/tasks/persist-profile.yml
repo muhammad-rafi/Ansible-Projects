@@ -1,0 +1,18 @@
+---
+
+# Task to create a Persistence profile with src_addr 
+- name: Create a Persistence profile with src_addr 
+  bigip_profile_persistence_src_addr:
+    name: "{{ persist_profile.name }}"
+    partition: "{{ persist_profile.partition | upper }}"
+    entry_timeout: "{{ persist_profile.entry_timeout }}"
+    parent: "{{ persist_profile.parent }}"
+    # hash_algorithm: "{{ item.hash_algorithm }}"
+    # match_across_services: "{{ item.match_across_services }}"
+    # match_across_virtuals: "{{ item.match_across_virtuals }}"
+    # mirror: "{{ item.mirror }}"
+    mask: "{{ persist_profile.mask }}"
+    state: "{{ persist_profile.state }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  tags: persist_src_addr

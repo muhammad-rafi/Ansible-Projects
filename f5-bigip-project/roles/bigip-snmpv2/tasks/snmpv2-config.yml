@@ -1,0 +1,14 @@
+---
+- name: Create SMNP v2c read-only and read-write communities
+  bigip_snmp_community:
+    name: "{{ item.name }}"
+    community: "{{ item.community }}"
+    version: "{{ item.version }}"
+    access: "{{ item.access }}"
+    ip_version: "{{ item.ip_version }}"
+    # partition: "{{ item.partition }}"
+    state: "{{ item.state }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  with_items: "{{ snmpv2_communities }}"
+  tags: bigip-snmp-community

@@ -1,0 +1,14 @@
+---
+# Task to attach an irule https_redirect to a virtual server 
+- name: Apply https redirect irule to a virtual server 
+  bigip_virtual_server:
+    name: "{{ item.name }}"
+    partition: "{{ item.partition | upper }}"
+    irules:
+      - /Common/_sys_https_redirect
+    all_profiles:
+      - http
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  with_items: "{{ virtual_server }}"
+  tags: https_redirect_irule

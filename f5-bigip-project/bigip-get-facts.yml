@@ -1,0 +1,63 @@
+---
+- name: GET FACTS FOR F5 BIG-IP 
+  hosts: eve_bigip
+  connection: local
+  gather_facts: true 
+  collections: 
+    - f5networks.f5_modules
+  vars:
+    cli:
+      server: "{{ inventory_hostname }}"
+      user: "{{ ansible_user }}"
+      password: "{{ ansible_pass }}"
+      server_port: "{{ port }}"
+      validate_certs: no
+
+  tasks:
+
+    - name: Gather facts for F5 Big-ip
+      bigip_device_info:
+        gather_subset:
+         - system-info
+        provider: "{{ cli }}"
+      register: bigip_facts
+
+    - name: Get the F5 big-ip Base mac-address 
+      debug:
+        var: bigip_facts['system_info']['base_mac_address']
+
+    - name: Get the F5 big-ip System Version 
+      debug:
+        var: bigip_facts['system_info']['product_version']
+
+    - name: Get the F5 big-ip System Information
+      debug:
+        var: bigip_facts
+      tags: debug
+
+    - name: Collect BIG-IP Facts
+      bigip_device_info:
+        gather_subset:
+          # - "!all"
+          # - traffic-groups
+          # - self-ips 
+          # - partitions
+          - ltm-pools
+        provider: "{{ cli }}"
+      register: f5_facts
+      delegate_to: localhost
+
+    - name: debug facts for F5 
+      debug: 
+        msg: "{{ f5_facts }}"
+
+    # Check the IPv4 address for the target node or mangaed node
+    - debug: var=hostvars[inventory_hostname]['ansible_default_ipv4']['address']
+
+    # Check the IPv6 address for the target node or mangaed node
+    - debug: var=hostvars[inventory_hostname]['ansible_default_ipv6']['address']
+
+    # Get the network related information for the target node, note: 'connection: local' should be off and gather_facts should be true
+    - name: Get the Network Information for the target node 
+      debug:
+        msg: "{{ ansible_default_ipv4 }}"

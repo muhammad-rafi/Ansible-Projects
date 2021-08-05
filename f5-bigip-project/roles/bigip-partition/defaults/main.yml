@@ -1,0 +1,9 @@
+---
+# defaults file for bigip-partition
+partition: 
+  - name: TENANT_2
+    description: TENANT2_PARTITION
+    rd_id: 2
+    rd_name: 2
+    rd_decs: TENANT_2
+    state: present

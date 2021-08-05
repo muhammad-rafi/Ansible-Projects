@@ -1,0 +1,12 @@
+---
+
+# Task to apply persistence profile to a Virtual Server
+- name: Apply persistence profile to a Virtual Server
+  bigip_virtual_server:
+    name: "{{ virtual_server.name }}"
+    partition: "{{ virtual_server.partition | upper }}"
+    default_persistence_profile: "{{ virtual_server.default_persist_profile }}"
+    fallback_persistence_profile: "{{ virtual_server.fallback_persist_profile }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  tags: apply_profile

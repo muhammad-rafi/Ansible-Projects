@@ -1,0 +1,15 @@
+---
+
+# Task to create vlan and tagged to the interface 
+- name: Create VLAN and tagged to the interface
+  bigip_vlan:
+    name: "{{ item.vlan_name }}"
+    description: "{{ item.description }}"
+    tag: "{{ item.vlan_id }}"
+    tagged_interface: "{{ item.tag_interface }}"
+    partition: "{{ item.partition | upper }}"
+    state: "{{ item.state }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  with_items: "{{ vlan }}"
+  tags: vlan

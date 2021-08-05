@@ -1,0 +1,11 @@
+---
+# tasks file for bigip-sshd
+- name: Set the SSHD service to run on port 22
+  bigip_device_sshd:
+    port: "{{ sshd_configs.port }}"
+    inactivity_timeout: "{{ sshd_configs.inactivity_timeout }}"
+    log_level: "{{ sshd_configs.log_level }}"
+    login: "{{ sshd_configs.login }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  tags: bigip-sshd

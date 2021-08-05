@@ -1,0 +1,18 @@
+---
+# tasks file for bigip-snmpv3
+- name: Create SMNP v3 read-only and read-write community
+  bigip_snmp_community:
+    version: "{{ item.version }}"
+    name: "{{ item.name }}"
+    snmp_username: "{{ item.snmp_username }}"
+    snmp_auth_protocol: "{{ item.snmp_auth_protocol }}"
+    snmp_auth_password: "{{ item.snmp_auth_password }}"
+    snmp_privacy_protocol: "{{ item.snmp_privacy_protocol }}"
+    snmp_privacy_password: "{{ item.snmp_privacy_password }}"
+    oid: "{{ item.oid }}"
+    access: "{{ item.access }}"
+    state: "{{ item.state }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  with_items: "{{ snmpv3_users }}"
+  tags: bigip-snmpv3
