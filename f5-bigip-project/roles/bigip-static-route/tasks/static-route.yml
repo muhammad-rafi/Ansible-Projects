@@ -17,5 +17,5 @@
   with_items: "{{ static_route }}"
   tags: static_route
   
-  notify:
-    - Save the running configuration of the BIG-IP
+  # notify:
+  #   - Save the running configuration of the BIG-IP

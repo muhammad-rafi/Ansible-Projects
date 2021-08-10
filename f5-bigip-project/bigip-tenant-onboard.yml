@@ -30,7 +30,10 @@
       include_role: 
         name: bigip-static-route
 
-
-
-
+    - name: Save the running configuration of the BIG-IP
+      bigip_config:
+        provider: "{{ cli }}"
+        save: yes
+      delegate_to: localhost
+      tags: save-config
   

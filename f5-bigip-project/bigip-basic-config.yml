@@ -25,6 +25,10 @@
       register: failover_state
    
     - block:
+      - name: CONFIGURING USERS
+        include_role: 
+          name: bigip-users
+
       - name: CONFIGURING NTP SERVERS
         include_role: 
           name: bigip-ntp

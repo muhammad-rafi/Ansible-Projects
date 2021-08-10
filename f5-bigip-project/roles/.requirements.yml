@@ -1,0 +1,37 @@
+---
+
+# under construction !
+#
+# Project Roles
+#
+#  Note: Make sure to edit the below requirements based on the context of the installation.
+#  For example, if ssh is not availible make sure to use https: instaed. However this will require
+#  token authentication.
+#
+# Example_1 (https):
+# - src: https://github.com/role-name/.git
+#   scm: git
+#   version: v1.0.0
+#
+# Example_2 (ssh/git):
+# - src: git@github.com:role-name/.git
+#   scm: git
+#   version: v1.0.0
+#
+# Example_3 (http/ssh/git)
+# - src: some git link2
+#   version: master
+#   name: role-name
+#
+#
+# collections:
+#   ansible-galaxy collection install f5networks.f5_modules
+#
+#
+# - src: git@github.com:galaxy-roles/bigip-backup.git
+#   scm: git
+#   version: master
+#
+# - src: git@github.com:galaxy-roles/bigip-backup.git
+#   scm: git
+#   version: develop

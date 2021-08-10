@@ -1,7 +1,7 @@
 # Variable file for BIG-IP HA Setup 
 ---
 
-initial_setup: no
+initial_setup: "no"
 bigip_username: admin
 bigip_password: !vault |
           $ANSIBLE_VAULT;1.1;AES256

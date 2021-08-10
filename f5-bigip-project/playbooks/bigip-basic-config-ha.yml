@@ -38,11 +38,12 @@
     # DO NOT RUN THIS MODULE AFTER HA IS SETUP, ONLY FOR DAY0 CONFIG
     - name: Set the hostname of the BIG-IP
       bigip_hostname:
-        hostname: "{{ bigip_name }}"
+        hostname: "{{ item.names }}"
         provider: "{{ cli }}"
       delegate_to: localhost
-      tags: bigip-hostname
+      with_items: "{{ bigip_names }}"
       when: '"yes" in initial_setup'
+      tags: bigip-hostname
 
     - block:
       - name: Add the user 'devnetbro' as an admin for all partitions
