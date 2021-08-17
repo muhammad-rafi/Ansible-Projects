@@ -1,0 +1,10 @@
+---
+# defaults file for bigip-ui-settings
+bigip_httpd_service:
+  auth_name: BIG-IP
+  gui_idle_timeout: 1200
+  gui_dashboard_timeout: yes
+  gui_log_level: warn
+  gui_max_clients: 10 
+  gui_hostname_lookup: no
+  auth_pam_validate_ip: yes

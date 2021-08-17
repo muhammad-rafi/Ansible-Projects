@@ -1,0 +1,8 @@
+---
+# tasks file for bigip-ui-acl
+- name: Set specific ip addresses to allow access to BIG-IP GUI 
+  bigip_device_httpd:
+    allow: "{{ bigip_httpd_service.gui_allow_addresses }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  tags: bigip-gui-acl

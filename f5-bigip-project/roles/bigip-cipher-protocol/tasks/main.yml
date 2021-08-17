@@ -1,0 +1,9 @@
+---
+# tasks file for bigip-cipher-protocol
+- name: Set SSL cipher suite and SSL protocols  by list or string 
+  bigip_device_httpd:
+    provider: "{{ cli }}"
+    ssl_cipher_suite: "{{ bigip_httpd_service.bigip_ssl_cipher_suite }}"
+    ssl_protocols: "{{ bigip_httpd_service.ssl_protocols }}"
+  delegate_to: localhost
+  tags: bigip-ssl-cipher-protocol

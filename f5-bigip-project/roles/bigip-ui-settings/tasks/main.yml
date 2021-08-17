@@ -1,0 +1,6 @@
+---
+# tasks file for bigip-ui-settings
+- name: Task to configure basic BIG-IP UI settings
+  include_tasks: ui-settings.yml
+  when: 
+    - bigip_httpd_service.auth_name  is defined

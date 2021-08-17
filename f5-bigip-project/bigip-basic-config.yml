@@ -41,9 +41,9 @@
         include_role: 
           name: bigip-syslog
 
-      - name: CONFIGURING SSHD SERVICE
-        include_role: 
-          name: bigip-sshd
+      # - name: CONFIGURING SSHD SERVICE
+      #   include_role: 
+      #     name: bigip-sshd
 
       - name: CONFIGURING SSHD ACLs
         include_role: 
@@ -57,9 +57,21 @@
         include_role: 
           name: bigip-ui-banner
 
-      - name: CONFIGURING SMNP V2C 
+      - name: CONFIGURING UI BASIC CONFIGURATION
         include_role: 
-          name: bigip-snmpv2
+          name: bigip-ui-settings 
+
+      - name: CONFIGURING SSL CIPHER AND SSL PROTOCOL
+        include_role: 
+          name: bigip-ui-settings 
+
+      - name: CONFIGURING UI ACCESS CONTROL 
+        include_role: 
+          name: bigip-ui-acl
+
+      # - name: CONFIGURING SMNP V2C 
+      #   include_role: 
+      #     name: bigip-snmpv2
 
       - name: CONFIGURING SMNP ACLs 
         include_role: 

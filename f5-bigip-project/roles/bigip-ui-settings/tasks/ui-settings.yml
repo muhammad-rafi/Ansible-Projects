@@ -1,0 +1,13 @@
+
+- name: Set the Bigip configuration utility GUI settings 
+  bigip_device_httpd:
+    auth_name: "{{ bigip_httpd_service.auth_name }}"
+    auth_pam_dashboard_timeout: "{{ bigip_httpd_service.gui_dashboard_timeout }}"
+    auth_pam_idle_timeout: "{{ bigip_httpd_service.gui_idle_timeout }}"
+    log_level: "{{ bigip_httpd_service.gui_log_level }}"
+    max_clients: "{{ bigip_httpd_service.gui_max_clients }}"
+    hostname_lookup: "{{ bigip_httpd_service.gui_hostname_lookup }}"
+    auth_pam_validate_ip: "{{ bigip_httpd_service.auth_pam_validate_ip }}"
+    provider: "{{ cli }}"
+  delegate_to: localhost
+  tags: bigip-gui-settings

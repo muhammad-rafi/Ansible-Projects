@@ -14,17 +14,17 @@
       validate_certs: no
 
   tasks:
-    - name: Set the hostname of the BIG-IP
-      bigip_hostname:
-        hostname: eve-bigip01.devnetbro.com
-        provider: "{{ cli }}"
-      delegate_to: localhost
-      tags: bigip-hostname
+    # - name: Set the hostname of the BIG-IP
+    #   bigip_hostname:
+    #     hostname: eve-bigip01.devnetbro.com
+    #     provider: "{{ cli }}"
+    #   delegate_to: localhost
+    #   tags: bigip-hostname
 
     - name: Add the user 'devnetbro' as an admin for all partitions
       bigip_user:
         username_credential: devnetbro
-        password_credential: myP@ssw0rd
+        password_credential: myP@ssw0rd!23
         full_name: Devnet Bro
         partition: Common
         partition_access: all:admin # Parition:Role
@@ -96,12 +96,75 @@
       bigip_device_sshd:
         port: 22
         allow: all
+          # - 1.1.1.1
+          # - 2.2.2.2
+          # - 3.3.3.3
+          # - "127.0.0.0/8"
         inactivity_timeout: 600
         log_level: info
         login: enabled  
         provider: "{{ cli }}"
       delegate_to: localhost
       tags: bigip-sshd
+
+    - name: Set the Bigip configuration utility GUI settings 
+      bigip_device_httpd:
+        auth_name: BIG-IP
+        auth_pam_dashboard_timeout: yes
+        auth_pam_idle_timeout: 1200
+        log_level: warn
+        max_clients: 10
+        hostname_lookup: no
+        auth_pam_validate_ip: yes
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: bigip-gui-settings
+
+    - name: Set SSL cipher suite and SSL protocols  by list or string 
+      bigip_device_httpd:
+        provider: "{{ cli }}"
+        # ssl_cipher_suite: ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA256:ECDHE-ECDSA-AES256-SHA384:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA:AES256-SHA:AES128-SHA256:AES256-SHA256
+        ssl_cipher_suite: 
+          - ECDHE-RSA-AES128-GCM-SHA256
+          - ECDHE-RSA-AES256-GCM-SHA384
+          - ECDHE-RSA-AES128-SHA
+          - ECDHE-RSA-AES256-SHA
+          - ECDHE-RSA-AES128-SHA256
+          - ECDHE-RSA-AES256-SHA384
+          - ECDHE-ECDSA-AES128-GCM-SHA256
+          - ECDHE-ECDSA-AES256-GCM-SHA384
+          - ECDHE-ECDSA-AES128-SHA
+          - ECDHE-ECDSA-AES256-SHA
+          - ECDHE-ECDSA-AES128-SHA256
+          - ECDHE-ECDSA-AES256-SHA384
+          - AES128-GCM-SHA256
+          - AES256-GCM-SHA384
+          - AES128-SHA
+          - AES256-SHA
+          - AES128-SHA256
+          - AES256-SHA256
+        ssl_protocols: all -SSLv2 -SSLv3 -TLSv1 -TLSv1.2
+        # ssl_protocols:
+        #   - all
+        #   - -SSLv2
+        #   - -SSLv3
+        #   - -TLSv1
+        #   - -TLSv1.2
+      delegate_to: localhost
+      tags: bigip-ssl-cipher-protocol
+
+    - name: Set specific ip addresses to allow access to BIG-IP GUI 
+      bigip_device_httpd:
+        # allow: all
+        allow:
+          - 0.0.0.0/0.0.0.0
+          - 1.1.1.1
+          - 2.2.2.2
+          - 3.3.3.3
+          - "127.0.0.0/8"
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: bigip-gui-acl
 
     - name: Set snmp contact, location and allowed addresses
       bigip_snmp:
@@ -180,10 +243,15 @@
           oid: null
           access: rw
           state: present
+          
+      notify:
+        - Save the running configuration of the BIG-IP
+
+  handlers:
 
     - name: Save the running configuration of the BIG-IP
       bigip_config:
         save: yes
         provider: "{{ cli }}"
       delegate_to: localhost
-      tags: save_config
+      tags: bigip-save-config

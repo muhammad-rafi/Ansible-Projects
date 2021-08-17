@@ -117,6 +117,34 @@
         delegate_to: localhost
         tags: bigip-ui-banner
 
+      - name: Set the Bigip configuration utility GUI settings 
+        bigip_device_httpd:
+          auth_name: "{{ bigip_httpd_service.auth_name }}"
+          auth_pam_dashboard_timeout: "{{ bigip_httpd_service.gui_dashboard_timeout }}"
+          auth_pam_idle_timeout: "{{ bigip_httpd_service.gui_idle_timeout }}"
+          log_level: "{{ bigip_httpd_service.gui_log_level }}"
+          max_clients: "{{ bigip_httpd_service.gui_max_clients }}"
+          hostname_lookup: "{{ bigip_httpd_service.gui_hostname_lookup }}"
+          auth_pam_validate_ip: "{{ bigip_httpd_service.auth_pam_validate_ip }}"
+          provider: "{{ cli }}"
+        delegate_to: localhost
+        tags: bigip-gui-settings
+
+      - name: Set SSL cipher suite and SSL protocols  by list or string 
+        bigip_device_httpd:
+          provider: "{{ cli }}"
+          ssl_cipher_suite: "{{ bigip_httpd_service.bigip_ssl_cipher_suite }}"
+          ssl_protocols: "{{ bigip_httpd_service.ssl_protocols }}"
+        delegate_to: localhost
+        tags: bigip-ssl-cipher-protocol
+
+      - name: Set specific ip addresses to allow access to BIG-IP GUI 
+        bigip_device_httpd:
+          allow: "{{ bigip_httpd_service.gui_allow_addresses }}"
+          provider: "{{ cli }}"
+        delegate_to: localhost
+        tags: bigip-gui-acl
+
       - name: Set snmp contact, location and allowed addresses
         bigip_snmp:
           contact: "{{ snmp_configs.contact }}"

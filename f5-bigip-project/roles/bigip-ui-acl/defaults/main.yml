@@ -1,0 +1,9 @@
+---
+# defaults file for bigip-ui-acl
+bigip_httpd_service:
+  gui_allow_addresses:
+    - 0.0.0.0/0.0.0.0
+    - 1.1.1.1
+    - 2.2.2.2
+    - 3.3.3.3
+    - "127.0.0.0/8"

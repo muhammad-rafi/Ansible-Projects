@@ -82,6 +82,7 @@ snmp_configs:
   contact: DevNetBro
   location: Birmingham, UK
   allowed_addresses:
+    - '0.0.0.0/0'
     - 1.1.1.1
     - 2.2.2.2
     - 3.3.3.3
@@ -125,6 +126,41 @@ snmpv3_users:
     oid: null
     access: rw
     state: present
+
+bigip_httpd_service:
+  bigip_ssl_cipher_suite: 
+    - ECDHE-RSA-AES128-GCM-SHA256
+    - ECDHE-RSA-AES256-GCM-SHA384
+    - ECDHE-RSA-AES128-SHA
+    - ECDHE-RSA-AES256-SHA
+    - ECDHE-RSA-AES128-SHA256
+    - ECDHE-RSA-AES256-SHA384
+    - ECDHE-ECDSA-AES128-GCM-SHA256
+    - ECDHE-ECDSA-AES256-GCM-SHA384
+    - ECDHE-ECDSA-AES128-SHA
+    - ECDHE-ECDSA-AES256-SHA
+    - ECDHE-ECDSA-AES128-SHA256
+    - ECDHE-ECDSA-AES256-SHA384
+    - AES128-GCM-SHA256
+    - AES256-GCM-SHA384
+    - AES128-SHA
+    - AES256-SHA
+    - AES128-SHA256
+    - AES256-SHA256
+  auth_name: BIG-IP
+  ssl_protocols: all -SSLv2 -SSLv3 -TLSv1 -TLSv1.2
+  gui_idle_timeout: 1200
+  gui_dashboard_timeout: yes
+  gui_log_level: warn
+  gui_max_clients: 10 
+  gui_hostname_lookup: no
+  auth_pam_validate_ip: yes
+  gui_allow_addresses:
+    - 0.0.0.0/0.0.0.0
+    - 1.1.1.1
+    - 2.2.2.2
+    - 3.3.3.3
+    - "127.0.0.0/8"
 
 device_group:
   name: HA-DEVICE-GROUP
