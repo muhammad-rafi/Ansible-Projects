@@ -1,0 +1,44 @@
+- name: CREATE F5 BIGIP NODES
+  hosts: eve_bigip
+  gather_facts: false  
+  connection: local
+  collections: 
+    - f5networks.f5_modules
+    
+  vars:
+    cli:
+      server: "{{ inventory_hostname }}"
+      user: "{{ ansible_user }}"
+      password: "{{ ansible_pass }}"
+      server_port: "{{ port }}"
+      validate_certs: false
+
+  tasks:
+    - name: Get the failover state of the BIG-IP  
+      bigip_command:
+        provider: "{{ cli }}"
+        commands:
+          - show sys failover
+        wait_for:
+         - result[0] contains "Failover"
+      delegate_to: localhost
+      register: failover_state
+
+    - block:
+      - name: CONFIGURE BIGIP SSHD BANNER
+        include_role: 
+          name: bigip-sshd-banner
+
+      - name: CONFIGURE BIGIP UI BANNER
+        include_role: 
+          name: bigip-ui-banner
+
+      when: "'active' in failover_state.stdout[0]"
+      delegate_to: localhost
+
+    - name: Save the running configuration of the BIG-IP
+      bigip_config:
+        provider: "{{ cli }}"
+        save: yes
+      delegate_to: localhost
+      tags: save-config
