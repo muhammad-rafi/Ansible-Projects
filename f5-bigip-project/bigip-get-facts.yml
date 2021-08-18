@@ -5,22 +5,59 @@
   gather_facts: true 
   collections: 
     - f5networks.f5_modules
+
   vars:
     cli:
       server: "{{ inventory_hostname }}"
       user: "{{ ansible_user }}"
       password: "{{ ansible_pass }}"
       server_port: "{{ port }}"
-      validate_certs: no
+      validate_certs: false
 
   tasks:
 
-    - name: Gather facts for F5 Big-ip
-      bigip_device_info:
-        gather_subset:
-         - system-info
-        provider: "{{ cli }}"
-      register: bigip_facts
+
+    # - name: Set fact the variable of the F5 big-ip hostnames
+    #   set_fact:
+    #     hostnames: "{{ inventory_hostname }}"
+
+    # - name: Display the F5 big-ip hostnames
+    #   debug:
+    #     msg: "{{ hostnames[:11] }}"
+
+    # - name: Display the F5 big-ip hostnames from inventory_hostname
+    #   debug:
+    #     msg: "{{ item[:11] }}"
+    #   with_items: "{{ inventory_hostname }}"
+
+    # - name: Gather facts for F5 Big-ip devices 
+    #   bigip_device_info:
+    #     gather_subset:
+    #      - devices
+    #     provider: "{{ cli }}"
+    #   register: bigip_facts
+
+    # # - name: Display the F5 big-ip hostnames
+    # #   debug:
+    # #     var: bigip_facts['devices'][0]['hostname']
+
+    # - name: set fact the variable of  the F5 big-ip Base hostnames
+    #   set_fact:
+    #     # hostname1: "{{ bigip_facts['devices'][0]['hostname'] }}"
+    #     hostname2: "{{ bigip_facts['devices'][1]['hostname'] }}"
+
+    # - name: Get the F5 big-ip Base hostnames
+    #   debug:
+    #     msg: 
+    #       # - "{{ hostname1[:11] }}" 
+    #       - "{{ hostname2[:11] }}"
+
+    # - name: Gather facts for F5 Big-ip
+    #   bigip_device_info:
+    #     gather_subset:
+    #      - system-info
+    #     provider: "{{ cli }}"
+    #   register: bigip_facts
 
     - name: Get the F5 big-ip Base mac-address 
       debug:

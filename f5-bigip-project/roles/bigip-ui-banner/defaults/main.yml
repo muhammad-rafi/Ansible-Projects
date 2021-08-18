@@ -1,6 +1,8 @@
 ---
 # defaults file for bigip-ui-banner
 bigip_banner:
+  bipip01_hostname: eve-bigip01
+  bipip02_hostname: eve-bigip02
   # text: |
   #   ****************************************************** 
   #   **            "{{ inventory_hostname[0:11] }}"/"{{ inventory_hostname[0:11] }}"               **
