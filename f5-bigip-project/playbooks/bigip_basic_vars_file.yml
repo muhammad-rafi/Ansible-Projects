@@ -6,7 +6,7 @@ initial_setup: "no"
 # Variable for bigip-basic-config.yml playbook
 # bigip_name: eve-bigip01.devnetbro.com
 bigip_names:
-  names:
+  name:
     - eve-bigip01.devnetbro.com
     - eve-bigip02.devnetbro.com
 
@@ -54,7 +54,7 @@ bigip_banner:
   status: enabled
   text: |
     ****************************************************** 
-    **            "{{ inventory_hostname[0:11] }}"/"{{ inventory_hostname[0:11] }}"               **
+    **           "{{ inventory_hostname }}"             **
     **             F5 vBIG-IP - 15.1.2.1                **
     **  Login Required. If you have not been provided   **
     **     with permission to access this device,       **  

@@ -11,12 +11,12 @@
       user: "{{ ansible_user }}"
       password: "{{ ansible_pass }}"
       server_port: "{{ port }}"
-      validate_certs: no
+      validate_certs: false
 
   tasks:
     # - name: Set the hostname of the BIG-IP
     #   bigip_hostname:
-    #     hostname: eve-bigip01.devnetbro.com
+    #     hostname: "{{ inventory_hostname }}"
     #     provider: "{{ cli }}"
     #   delegate_to: localhost
     #   tags: bigip-hostname

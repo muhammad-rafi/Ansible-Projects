@@ -14,7 +14,7 @@
       user: "{{ ansible_user }}"
       password: "{{ ansible_pass }}"
       server_port: "{{ port }}"
-      validate_certs: no
+      validate_certs: false
 
   tasks:
     # - name: Get failover state via shell command # "Ansible controller server must have ssh access to the Bigip"

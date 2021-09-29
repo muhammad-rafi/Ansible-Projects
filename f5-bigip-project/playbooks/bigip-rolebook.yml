@@ -11,18 +11,37 @@
       user: "{{ ansible_user }}"
       password: "{{ ansible_pass }}"
       server_port: "{{ port }}"
-      validate_certs: no
+      validate_certs: false
 
   roles:
-    # - bigip-users
+
+    # - { role: bigip-ha }
+    
+    # Basic BIG-IP Configuration Roles 
     # - bigip-backup
+    # - bigip-users
+    # - bigip-ntp
+    # - bigip-dns
+    # - bigips-syslog
+    # - bigip-snmpv2
+    # - bigip-snmpv3
+    # - bigip-snmp-acl
+    # - bigip-sshd
+    # - bigip-sshd-acl
+    # - bigip-sshd-banner
+    # - bigip-ui-settings
+    # - bigip-ui-banner
+    # - bigip-ui-acl
+    # - bigip-cipher-protocol
+
+    # BIG-IP Partition, VIP, Pool, Nodes etc. Roles
     # - bigip-partition
     # - bigip-vlan
     # - bigip-selfip
-    - bigip-static-route
-    # - bigip-vip-pool
+    # - bigip-static-route
     # - bigip-node
     # - bigip-pool
+    # - bigip-vip-pool
     # - bigip-virtualserver
     # - bigip-persist-profile
     # - bigip-cookie-profile

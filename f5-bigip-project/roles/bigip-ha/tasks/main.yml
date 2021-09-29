@@ -1,0 +1,168 @@
+---
+# tasks file for bigip-ha-setup
+- name: Set the hostname of the BIG-IP members
+  bigip_hostname:
+    provider:
+      server: "{{ item.bigip_host }}"
+      user: "{{ ansible_user  }}"
+      password: "{{ ansible_pass }}"
+      validate_certs: "{{ validate_certs }}"
+    hostname:  "{{ item.bigip_name }}"
+  delegate_to: localhost
+  with_items: 
+    - "{{ bigip_member1 }}"
+    - "{{ bigip_member2 }}"
+  when: '"yes" in initial_setup'
+
+- name: Configure HA VLANs on the BIG-IPs members
+  bigip_vlan:
+    name: "{{ item.bigip_ha_vlan.name }}"
+    tag: "{{ item.bigip_ha_vlan.vlan_id }}"
+    untagged_interfaces: "{{ item.bigip_ha_vlan.interface }}"
+    provider:
+      server: "{{ item.bigip_host }}"
+      user: "{{ ansible_user  }}"
+      password: "{{ ansible_pass }}"
+      validate_certs: "{{ validate_certs }}"
+  delegate_to: localhost
+  with_items: 
+    - "{{ bigip_member1 }}"
+    - "{{ bigip_member2 }}"
+
+- name: Configure HA SELF-IPs on the BIG-IPs members
+  bigip_selfip:
+    name: "{{ item.bigip_ha_selfip.name }}"
+    address: "{{ item.bigip_ha_selfip.address }}"
+    netmask: "{{item.bigip_ha_selfip.netmask }}"
+    vlan: "{{ item.bigip_ha_selfip.vlan }}"
+    provider:
+      server: "{{ item.bigip_host }}"
+      user: "{{ ansible_user  }}"
+      password: "{{ ansible_pass }}"
+      validate_certs: "{{ validate_certs }}"
+  delegate_to: localhost
+  with_items: 
+    - "{{ bigip_member1 }}"
+    - "{{ bigip_member2 }}"
+
+- name: Making sure HA interface is enabled on the BIG-IPs members
+  bigip_interface:
+    name: "{{ item.bigip_ha_vlan.interface }}"
+    enabled: yes
+    provider:
+      server: "{{ item.bigip_host }}"
+      user: "{{ ansible_user  }}"
+      password: "{{ ansible_pass }}"
+      validate_certs: "{{ validate_certs }}"
+  delegate_to: localhost
+  with_items: 
+    - "{{ bigip_member1 }}"
+    - "{{ bigip_member2 }}"
+
+- name: Configure synchronization between BIG-IP HA pair - ConfigSync
+  bigip_device_connectivity:
+    config_sync_ip: "{{ item.bigip_ha_selfip.address }}"
+    mirror_primary_address: "{{ item.bigip_ha_selfip.address }}"
+    unicast_failover:
+    - address: "{{ item.bigip_ha_selfip.address }}"
+    - address: "{{ item.bigip_host }}"
+    provider:
+      server: "{{ item.bigip_host }}"
+      user: "{{ ansible_user  }}"
+      password: "{{ ansible_pass }}"
+      validate_certs: "{{ validate_certs }}"
+  delegate_to: localhost
+  with_items: 
+    - "{{ bigip_member1 }}"
+    - "{{ bigip_member2 }}"
+
+- name: Configure device trust for BIG-IP  
+  bigip_device_trust:
+    type: peer
+    peer_server: "{{ bigip_member2.bigip_host }}"
+    peer_hostname: "{{ bigip_member2.bigip_name }}"
+    peer_user: "{{ ansible_user  }}"
+    peer_password: "{{ ansible_pass }}"
+    state: present
+    provider:
+      server: "{{ item.bigip_host }}"
+      user: "{{ ansible_user  }}"
+      password: "{{ ansible_pass }}"
+      validate_certs: "{{ validate_certs }}"
+  delegate_to: localhost
+  with_items: 
+    - "{{ bigip_member1 }}"
+
+- name: Create a sync-failover device group with auto-sync enabled/disabled
+  bigip_device_group:
+    name: "{{ item.device_group.name }}"
+    description: "{{ item.device_group.description }}"
+    auto_sync: "{{ item.device_group.auto_sync }}"
+    save_on_auto_sync: "{{ item.device_group.save_on_auto_sync }}"
+    type: "{{ item.device_group.type }}"
+    network_failover: "{{ item.device_group.network_failover }}"
+    full_sync : "{{ item.device_group.full_sync }}"
+    max_incremental_sync_size: "{{ item.device_group.max_incremental_sync_size }}"
+    state: "{{ item.device_group.state }}"
+    provider:
+      server: "{{ item.bigip_host }}"
+      user: "{{ ansible_user  }}"
+      password: "{{ ansible_pass }}"
+      validate_certs: "{{ validate_certs }}"
+  delegate_to: localhost
+  with_items: 
+    - "{{ bigip_member1 }}"
+    - "{{ bigip_member2 }}"
+
+- name: Add the BIG-IP peer member to the device group
+  bigip_device_group_member:
+    name: "{{ item.bigip_name }}"
+    device_group: "{{ item.device_group.name }}"
+    state: "{{ item.device_group.state }}"
+    provider:
+      server: "{{ item.bigip_host }}"
+      user: "{{ ansible_user  }}"
+      password: "{{ ansible_pass }}"
+      validate_certs: "{{ validate_certs }}"
+  delegate_to: localhost
+  with_items: 
+    - "{{ bigip_member1 }}"
+    - "{{ bigip_member2 }}"
+
+- name: Perform an initial sync of a BIG-IP to a new device group
+  bigip_configsync_action:
+    device_group: "{{ item.device_group.name }}"
+    sync_device_to_group: yes
+    provider:
+      server: "{{ item.bigip_host }}"
+      user: "{{ ansible_user  }}"
+      password: "{{ ansible_pass }}"
+      validate_certs: "{{ validate_certs }}"
+  delegate_to: localhost
+  with_items: 
+    - "{{ bigip_member1 }}"
+
+- name: Get the failover state of both BIG-IP members 
+  bigip_command:
+    provider:
+      server: "{{ item.bigip_host }}"
+      user: "{{ ansible_user  }}"
+      password: "{{ ansible_pass }}"
+      validate_certs: "{{ validate_certs }}"
+    commands:
+      - show sys failover 
+    wait_for:
+     - result[0] contains "Failover"
+  with_items: 
+    - "{{ bigip_member1 }}"
+    - "{{ bigip_member2 }}"
+  delegate_to: localhost
+  register: failover_state
+  tags: failover-status
+
+- name: Display the failover state of both BIG-IP members 
+  debug: 
+    msg: "{{ item.stdout }}"
+  with_items: 
+    - "{{ failover_state.results }}"
+  tags: display-ha-status

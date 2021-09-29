@@ -1,0 +1,49 @@
+---
+# defaults file for bigip-ha-setup
+initial_setup: "no"
+
+bigip_member1:
+  bigip_name: eve-bigip01.devnetbro.com
+  bigip_host: 192.168.56.11
+  bigip_ha_vlan:
+    name: "HA-VLAN"
+    vlan_id: "172"
+    interface: "1.1"
+  bigip_ha_selfip: 
+    name: "HA-SELF-IP"
+    address: 172.16.1.2
+    netmask: 255.255.255.248
+    vlan: "HA-VLAN"
+  device_group:
+    name: HA-DEVICE-GROUP
+    description: HA-DEVICE-GROUP
+    auto_sync: no
+    save_on_auto_sync: no
+    type: "sync-failover"
+    network_failover: yes 
+    full_sync : no 
+    max_incremental_sync_size: 1024
+    state: present 
+
+bigip_member2:
+  bigip_name: eve-bigip02.devnetbro.com
+  bigip_host: 192.168.56.12
+  bigip_ha_vlan:
+    name: "HA-VLAN"
+    vlan_id: "172"
+    interface: "1.1"
+  bigip_ha_selfip: 
+    name: "HA-SELF-IP"
+    address: 172.16.1.3
+    netmask: 255.255.255.248
+    vlan: "HA-VLAN"
+  device_group:
+    name: HA-DEVICE-GROUP
+    description: HA-DEVICE-GROUP
+    auto_sync: no
+    save_on_auto_sync: no
+    type: "sync-failover"
+    network_failover: yes 
+    full_sync : no 
+    max_incremental_sync_size: 1024
+    state: present 

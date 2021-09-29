@@ -1,0 +1,26 @@
+---
+
+- name: F5 BIGIP HA (HIGH AVAILABILITY) ACTIVE/STANDBY CONFIGURATION PLAYBOOK 
+  hosts: localhost
+  gather_facts: false  
+  connection: local
+  collections: 
+    - f5networks.f5_modules
+
+  # Steps to follow to create a HA between a pair of BIG-IPs 
+  # 1. Make sure hostnames are configured correctly
+  # 2. Create HA-VLANs 
+  # 3. Create HA-SELFIPs 
+  # 4. Config-sync
+  # 5. Device Trust 
+  # 6. Device Group - Sync Failover 
+  # 7. Add members into the device group
+  # 8. Perform initial sync
+
+  tasks:
+    - name: Configure High Availability for BIG-IP
+      include_role: 
+        name: bigip-ha
+
+
+
