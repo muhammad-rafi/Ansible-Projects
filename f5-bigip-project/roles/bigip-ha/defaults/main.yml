@@ -14,16 +14,6 @@ bigip_member1:
     address: 172.16.1.2
     netmask: 255.255.255.248
     vlan: "HA-VLAN"
-  device_group:
-    name: HA-DEVICE-GROUP
-    description: HA-DEVICE-GROUP
-    auto_sync: no
-    save_on_auto_sync: no
-    type: "sync-failover"
-    network_failover: yes 
-    full_sync : no 
-    max_incremental_sync_size: 1024
-    state: present 
 
 bigip_member2:
   bigip_name: eve-bigip02.devnetbro.com
@@ -37,13 +27,14 @@ bigip_member2:
     address: 172.16.1.3
     netmask: 255.255.255.248
     vlan: "HA-VLAN"
-  device_group:
-    name: HA-DEVICE-GROUP
-    description: HA-DEVICE-GROUP
-    auto_sync: no
-    save_on_auto_sync: no
-    type: "sync-failover"
-    network_failover: yes 
-    full_sync : no 
-    max_incremental_sync_size: 1024
-    state: present 
+
+device_group:
+  name: HA-DEVICE-GROUP
+  description: HA-DEVICE-GROUP
+  auto_sync: no
+  save_on_auto_sync: no
+  type: "sync-failover"
+  network_failover: yes 
+  full_sync : no 
+  max_incremental_sync_size: 1024
+  state: present 

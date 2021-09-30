@@ -1,7 +1,7 @@
 ---
 # tasks file for bigip-ha-setup
 - name: Set the hostname of the BIG-IP members
-  f5networks.f5_modules.bigip_hostname:
+  bigip_hostname:
     provider:
       server: "{{ item.bigip_host }}"
       user: "{{ ansible_user  }}"
@@ -15,7 +15,7 @@
   when: '"yes" in initial_setup'
 
 - name: Configure HA VLANs on the BIG-IPs members
-  f5networks.f5_modules.bigip_vlan:
+  bigip_vlan:
     name: "{{ item.bigip_ha_vlan.name }}"
     tag: "{{ item.bigip_ha_vlan.vlan_id }}"
     untagged_interfaces: "{{ item.bigip_ha_vlan.interface }}"
@@ -30,7 +30,7 @@
     - "{{ bigip_member2 }}"
 
 - name: Configure HA SELF-IPs on the BIG-IPs members
-  f5networks.f5_modules.bigip_selfip:
+  bigip_selfip:
     name: "{{ item.bigip_ha_selfip.name }}"
     address: "{{ item.bigip_ha_selfip.address }}"
     netmask: "{{item.bigip_ha_selfip.netmask }}"
@@ -46,7 +46,7 @@
     - "{{ bigip_member2 }}"
 
 - name: Making sure HA interface is enabled on the BIG-IPs members
-  f5networks.f5_modules.bigip_interface:
+  bigip_interface:
     name: "{{ item.bigip_ha_vlan.interface }}"
     enabled: yes
     provider:
@@ -60,7 +60,7 @@
     - "{{ bigip_member2 }}"
 
 - name: Configure synchronization between BIG-IP HA pair - ConfigSync
-  f5networks.f5_modules.bigip_device_connectivity:
+  bigip_device_connectivity:
     config_sync_ip: "{{ item.bigip_ha_selfip.address }}"
     mirror_primary_address: "{{ item.bigip_ha_selfip.address }}"
     unicast_failover:
@@ -77,7 +77,7 @@
     - "{{ bigip_member2 }}"
 
 - name: Configure device trust for BIG-IP  
-  f5networks.f5_modules.bigip_device_trust:
+  bigip_device_trust:
     type: peer
     peer_server: "{{ bigip_member2.bigip_host }}"
     peer_hostname: "{{ bigip_member2.bigip_name }}"
@@ -94,16 +94,16 @@
     - "{{ bigip_member1 }}"
 
 - name: Create a sync-failover device group with auto-sync enabled/disabled
-  f5networks.f5_modules.bigip_device_group:
-    name: "{{ item.device_group.name }}"
-    description: "{{ item.device_group.description }}"
-    auto_sync: "{{ item.device_group.auto_sync }}"
-    save_on_auto_sync: "{{ item.device_group.save_on_auto_sync }}"
-    type: "{{ item.device_group.type }}"
-    network_failover: "{{ item.device_group.network_failover }}"
-    full_sync : "{{ item.device_group.full_sync }}"
-    max_incremental_sync_size: "{{ item.device_group.max_incremental_sync_size }}"
-    state: "{{ item.device_group.state }}"
+  bigip_device_group:
+    name: "{{ device_group.name }}"
+    description: "{{ device_group.description }}"
+    auto_sync: "{{ device_group.auto_sync }}"
+    save_on_auto_sync: "{{ device_group.save_on_auto_sync }}"
+    type: "{{ device_group.type }}"
+    network_failover: "{{ device_group.network_failover }}"
+    full_sync : "{{ device_group.full_sync }}"
+    max_incremental_sync_size: "{{ device_group.max_incremental_sync_size }}"
+    state: "{{ device_group.state }}"
     provider:
       server: "{{ item.bigip_host }}"
       user: "{{ ansible_user  }}"
@@ -115,10 +115,10 @@
     - "{{ bigip_member2 }}"
 
 - name: Add the BIG-IP peer member to the device group
-  f5networks.f5_modules.bigip_device_group_member:
+  bigip_device_group_member:
     name: "{{ item.bigip_name }}"
-    device_group: "{{ item.device_group.name }}"
-    state: "{{ item.device_group.state }}"
+    device_group: "{{ device_group.name }}"
+    state: "{{ device_group.state }}"
     provider:
       server: "{{ item.bigip_host }}"
       user: "{{ ansible_user  }}"
@@ -130,8 +130,8 @@
     - "{{ bigip_member2 }}"
 
 - name: Perform an initial sync of a BIG-IP to a new device group
-  f5networks.f5_modules.bigip_configsync_action:
-    device_group: "{{ item.device_group.name }}"
+  bigip_configsync_action:
+    device_group: "{{ device_group.name }}"
     sync_device_to_group: yes
     provider:
       server: "{{ item.bigip_host }}"
@@ -143,7 +143,7 @@
     - "{{ bigip_member1 }}"
 
 - name: Get the failover state of both BIG-IP members 
-  f5networks.f5_modules.bigip_command:
+  bigip_command:
     provider:
       server: "{{ item.bigip_host }}"
       user: "{{ ansible_user  }}"

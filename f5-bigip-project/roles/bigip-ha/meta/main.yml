@@ -1,5 +1,5 @@
-# collections: 
-#   - f5networks.f5_modules
+collections: 
+  - f5networks.f5_modules
   
 galaxy_info:
   author: your name
