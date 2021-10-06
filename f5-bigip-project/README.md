@@ -20,10 +20,10 @@ This project covers the followings configurations items
 Here are the screenshots of the pair of F5 BIG-IPs used during the
 project, you can see one is active and other one is in standby mode. 
 
-BIG-IP Active 
+#### BIG-IP Active 
 ![App Screenshot](https://github.com/muhammad-rafi/Ansible-Projects/blob/main/f5-bigip-project/images/bigip_active.PNG)
 
-BIG-IP Standby 
+#### BIG-IP Standby 
 ![App Screenshot](https://github.com/muhammad-rafi/Ansible-Projects/blob/main/f5-bigip-project/images/bigip_standby.PNG)
 
 ## Topology 
@@ -197,7 +197,7 @@ Here are the screens for both Tower/AWX Jobs and via Postman.
 
 As you can see from my ansible config file `ansible.cfg`, I 
 am using a vault for password protection `vault_password_file = .vault_pass`, 
-therfore, you will need to create your own vault if you like to use one. 
+therefore, you will need to create your own vault if you like to use one. 
 
 ## Authors
 
