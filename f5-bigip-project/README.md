@@ -221,6 +221,12 @@ As you can see from my ansible config file `ansible.cfg`, I
 am using a vault for password protection `vault_password_file = .vault_pass`, 
 therefore, you will need to create your own vault if you like to use one. 
 
+## ISSUES
+
+You may find some of the plays are not idempotent as this is how they are 
+and I have already raised few issues with [F5Networks/f5-ansible](https://github.com/F5Networks/f5-ansible)
+
+
 ## Authors
 
 [Muhammad Rafi](https://github.com/muhammad-rafi)
