@@ -33,7 +33,6 @@ Python: 3.6.8
 F5 BIG-IP: 15.1.2.1
 f5-icontrol-rest: 1.3.13
 f5-sdk: 3.0.21
-
 ```
 ## Usage: 
 
@@ -47,7 +46,6 @@ $ source .venv/bin/activate
 
 (.venv) $ cd Ansible-Projects/f5-bigip-project/
 (.venv) $ $ pip3 install -r requirements.txt
-
 ```
 
 ## Topology 
