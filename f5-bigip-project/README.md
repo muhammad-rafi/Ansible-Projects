@@ -26,6 +26,30 @@ project, you can see one is active and other one is in standby mode.
 #### BIG-IP Standby 
 ![App Screenshot](https://github.com/muhammad-rafi/Ansible-Projects/blob/main/f5-bigip-project/images/bigip_standby.PNG)
 
+### Versions 
+```
+Ansible: 2.9.16
+Python: 3.6.8
+F5 BIG-IP: 15.1.2.1
+f5-icontrol-rest: 1.3.13
+f5-sdk: 3.0.21
+
+```
+## Usage: 
+
+Clone the repository and create a virtual environment then 
+install the required packages from the requirement.txt 
+```
+$ git clone https://github.com/muhammad-rafi/Ansible-Projects
+$ sudo yum install python3-virtualenv
+$ virtualenv .venv
+$ source .venv/bin/activate
+
+(.venv) $ cd Ansible-Projects/f5-bigip-project/
+(.venv) $ $ pip3 install -r requirements.txt
+
+```
+
 ## Topology 
 Here is the topology used for this project 
 ![App Screenshot](https://github.com/muhammad-rafi/Ansible-Projects/blob/main/f5-bigip-project/images/bigip_topology.PNG)
