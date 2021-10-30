@@ -1,0 +1,40 @@
+---
+- name: IOSXE CONFIGURATION CONFIG VIA JINJA
+  hosts: IOSXE
+  connection: local
+  gather_facts: no
+  vars_files:
+    - intf_config_vars.yml
+
+  # ansible-playbook -i inventory.yml intf_playbook.yml
+  #
+  tasks:
+#    - name: Generate IOS-XE Interfaces Config via jinja2 template
+#      template:
+#        src: "{{ item.src }}"
+#        dest: "{{ item.dest }}"
+#        mode: 0777
+#      with_items:
+#        - {src: 'intf_config.j2',dest: 'intf_config_output.cfg'}
+      # register: output
+
+#    - name: Configure IOS-XE via config file 
+#      ios_config:
+#        backup: yes
+#        src: intf_config_output.cfg
+#      when:
+#        - ansible_network_os == 'ios'
+#      register: output 
+
+    - name: Configure IOS-XE via jinja2 tempalte
+      ios_config:
+        backup: yes
+        src: intf_config.j2
+      when:
+        - ansible_network_os == 'ios'
+      register: intf_config
+
+    - name: Interface has been updated 
+      debug:
+        var: intf_config.updates
+

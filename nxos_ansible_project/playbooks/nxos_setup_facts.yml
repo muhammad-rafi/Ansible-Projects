@@ -1,0 +1,22 @@
+---
+# ansible-playbook nxos_setup_facts.yml -e target=hostname
+- name: Gather NXOS Setup Facts
+  #hosts: "{{ target|default('localhost') }}"
+  hosts: nxos-core01.gcp01
+  connection: network_cli
+
+  tasks:
+    - name: Get Facts for NXOS
+      setup:
+      register: nxos_facts
+
+    - name: Show Facts for NXOS
+      debug:
+        var: nxos_facts
+
+    - name: Copy the Facts in json
+      copy:
+        content: "{{ hostvars[inventory_hostname] | to_nice_json }}"
+        dest: /home/muhammad_rafi/nxos_ansible_project/tmp/nxos-setup-facts.json
+      run_once: true
+      delegate_to: localhost

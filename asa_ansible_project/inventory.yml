@@ -1,0 +1,26 @@
+all:
+  children:
+    GCP_ASA:
+      hosts:
+        asa-core-fw01.gcp01:
+          ansible_host: 172.16.255.13
+          ansible_network_os: asa
+          ansible_port: 22
+          ntp_servers:
+            - 216.239.35.0
+            - 216.239.35.4
+          src_intf: management 
+        asa-core-fw02.gcp01:
+          ansible_host: 172.16.255.14
+          ansible_network_os: asa
+          ansible_port: 22
+          ntp_servers:
+            - 216.239.35.0
+            - 216.239.35.4
+          src_intf: management
+    ungrouped: {}
+
+# .ini equivalent for the above 
+# [GCP_ASA]
+# asa-core-fw01.gcp01 ansible_host=172.16.255.13 ansible_network_os=asa ansible_port=22
+# asa-core-fw02.gcp01 ansible_host=172.16.255.14 ansible_network_os=asa ansible_port=22

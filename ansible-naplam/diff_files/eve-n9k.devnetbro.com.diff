@@ -1,0 +1,4 @@
+username admin password 5 $5$axERRhx8$yA8mYLZ/aSWqNei/0A4eTxfw.KAmy8uJhfk7VTiYV3
+C  role network-admin
+snmp-server user admin network-admin auth md5 0xd1b8a53fd840dd4f5c2e502f6f11711d
+ priv 0xd1b8a53fd840dd4f5c2e502f6f11711d localizedkey

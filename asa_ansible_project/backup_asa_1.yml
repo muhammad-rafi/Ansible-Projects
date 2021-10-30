@@ -1,0 +1,21 @@
+- name: CONFIG BACKUP FOR THE ASA FW
+  hosts: asa-core-fw01.gcp01
+  connection: network_cli
+  gather_facts: no
+  become: yes
+  become_method: enable
+
+  # ansible-playbook -i inventory.yml backup_asa.yml -u admin -Kk
+
+  tasks:
+    - name: Take the configuration backup for the ASA FW
+      asa_config:
+        backup: yes
+        backup_options:
+          filename: "{{ inventory_hostname }}_backup.cfg"
+          dir_path: "/home/muhammad_rafi/asa_ansible_project/backups/"
+      register: output 
+
+    - name: Debug the output 
+      debug: 
+        msg: "{{ output }}"

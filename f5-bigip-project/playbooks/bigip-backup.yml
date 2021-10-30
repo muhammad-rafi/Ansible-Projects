@@ -1,0 +1,29 @@
+- name: F5 BIGIP PLAYBOOK FOR UCS BACKUP AND RESTORE 
+  hosts: eve_bigip
+  gather_facts: false  
+  connection: local
+  collections: 
+    - f5networks.f5_modules
+  
+  vars:
+    cli:
+      server: "{{ inventory_hostname }}"
+      user: "{{ ansible_user }}"
+      password: "{{ ansible_pass }}"
+      server_port: "{{ port }}"
+      validate_certs: no
+
+  tasks:
+
+    # Backup the F5 BIGIP LTM 
+    - name: Create and download a new UCS backup file 
+      bigip_ucs_fetch:
+        backup: yes
+        src: eveF5_backup_29-10-2021.ucs
+        dest: ~/f5-bigip-project/tmp/eveF5_backup_26-05-2021.ucs
+        # fail_on_missing: yes
+        create_on_missing: yes 
+        provider: "{{ cli }}"
+      delegate_to: localhost
+      tags: bigip_backup
+

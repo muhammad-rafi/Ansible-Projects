@@ -1,0 +1,42 @@
+- name: CONFIGURE ASA FW VIA JINJA TEMPLATE OR A FILE 
+  hosts: asa-core-fw01.gcp01
+  connection: network_cli
+  gather_facts: no
+  become: yes
+  become_method: enable
+  
+  # ansible-playbook -i inventory.yml config_asa.yml -u admin -kK
+
+  tasks:
+    - name: Configure ASA via jinja template (not Multi-Context Mode) 
+      asa_config:
+        src: "~/asa_ansible_project/templates/ntp_config.j2"
+        #src: ~/vsansible/tmp/A0PF-SPRINGW-1-TSS.conf
+      register: jinja_output_1 
+
+    - name: Configure ASA via config file (not Multi-Context Mode)
+      asa_config:
+        src: "~/asa_ansible_project/configs/ntp_config.conf"
+      register: file_output_1
+
+    # - name: Configure ASA via jinja template - Multi-Context Mode
+    #   asa_config:
+    #     src: "~/asa_ansible_project/templates/ntp_config.j2"
+    #     context: "{{ item }}"
+    #   loop:
+    #     - system
+    #   register: jinja_output_2
+
+    # - name: Configure ASA via config file - Multi-Context Mode
+    #   asa_config:
+    #     src: "~/asa_ansible_project/configs/ntp_config.conf"
+    #     context: "{{ item }}"
+    #   loop:
+    #     - system
+    #   register: file_output_2
+
+    - name: Debug output
+      debug: 
+        msg: "{{ jinja_output_1 }}"
+    #   msg: "{{ item.stdout_lines }}"
+    #   loop: "{{ output.results }}"

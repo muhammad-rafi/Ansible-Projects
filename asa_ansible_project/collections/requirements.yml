@@ -1,0 +1,6 @@
+---
+collections:
+  - servicenow.servicenow
+  - netbox.netbox
+  - cisco.nxos
+

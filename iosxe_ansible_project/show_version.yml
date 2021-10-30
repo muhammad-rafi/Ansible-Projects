@@ -1,0 +1,20 @@
+---
+- name: SHOW IOSXE VERSION  
+  hosts: "{{ target_hosts|default('localhost') }}"
+  connection: local
+  gather_facts: no
+
+  # ansible-playbook -i inventory.yml -e target_hosts=sandbox-iosxe-latest-1.cisco.com show_version.yml
+
+  tasks:
+    - name: GET THE IOS-XE SOFTWARE VERSION 
+      ios_command:
+        commands: show version
+        wait_for: result[0] contains IOS
+      register: ios_version
+
+    - name: SHOW THE IOS-XE SOFTWARE VERSION
+      debug:
+        msg:
+          - "{{ ios_version }}" 
+          # - "{{ ios_version.stdout_lines[0][0] }}"

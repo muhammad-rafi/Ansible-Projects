@@ -1,0 +1,17 @@
+all:
+  children:
+    NXOS:
+      hosts:
+        nxos-core01.gcp01:
+          ansible_host: 172.16.255.11
+          ansible_network_os: nxos
+          ansible_password: Admin_123
+          ansible_port: 22
+          ansible_user: admin
+        nxos-core02.gcp01:
+          ansible_host: 172.16.255.12
+          ansible_network_os: nxos
+          ansible_password: Admin_123
+          ansible_port: 22
+          ansible_user: admin
+    ungrouped: {}

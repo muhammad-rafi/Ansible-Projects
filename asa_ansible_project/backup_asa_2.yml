@@ -1,0 +1,26 @@
+- name: CONFIG BACKUP FOR THE ASA FW
+  hosts: asa-core-fw01.gcp01
+  connection: local
+  gather_facts: no
+  vars:
+    cli:
+      host: "{{ inventory_hostname }}"
+      # username: cisco
+      # password: cisco     
+      authorize: yes
+      auth_pass: Admin_123
+
+  # ansible-playbook -i inventory.yml backup_asa_2.yml -u admin -k
+
+  tasks:
+    - name: Take the configuration backup for the ASA FW
+      asa_config:
+        backup: yes
+        backup_options:
+          filename: "{{ inventory_hostname }}_backup.cfg"
+          dir_path: "/home/muhammad_rafi/asa_ansible_project/backups"
+        provider: "{{ cli }}"
+      register: output
+    
+    - name: Showing the backup path where the file is saved 
+      debug: msg="{{ inventory_hostname }}_backup.cfg is saved on {{ output.backup_path }}"

@@ -1,0 +1,14 @@
+[cisco_sandbox]
+#sbx-nxos-mgmt.cisco.com ansible_host=64.103.37.14 ansible_user=admin ansible_password=Admin_1234! ansible_port=443 ansible_network_os=nxos 
+
+#ios-xe-mgmt.cisco.com ansible_host=64.103.37.51 ansible_user=developer ansible_password=C1sco12345 ansible_port=8181 ansible_network_os=ios
+
+#sbx-iosxr-mgmt.cisco.com ansible_host=64.103.37.3 ansible_user=admin ansible_password=C1sco12345 ansible_port=8181 ansible_network_os=iosxr
+
+#eve-nxos01.devnetbro.com ansible_host=192.168.56.12 ansible_network_os=nxos ansible_port=80 ,ansible_user=admin ansible_password=admin
+
+eve-ng-n9k01.devnetbro.com ansible_host=192.168.56.18 ansible_network_os=nxos ansible_port=443 ansible_user=admin ansible_password=Admin!234
+
+
+[all:vars]
+ansible_python_interpreter=/home/muhammadrafi/py3.6_venv/bin/python

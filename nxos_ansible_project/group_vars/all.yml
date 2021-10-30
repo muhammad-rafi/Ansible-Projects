@@ -1,0 +1,3 @@
+---
+ansible_user: admin
+ansible_password: Admin_123

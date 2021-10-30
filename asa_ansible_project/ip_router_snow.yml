@@ -1,0 +1,24 @@
+---
+plugin: servicenow.servicenow.now
+table: cmdb_ci_ip_router
+instance: dev67492 # https://dev67492.service-now.com/
+username: 'admin'
+password: 'mysecret'
+fields:
+  - fqdn
+  - name
+  - host_name
+  - ip_address
+  - device_type
+  - location
+  - manufacturer
+  - model_id
+  - model_number
+  - os
+keyed_groups:
+  - key: sn_manufacturer | lower
+    prefix: ''
+    separator: ''
+  - key: sn_location | lower
+    prefix: ''
+

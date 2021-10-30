@@ -1,0 +1,19 @@
+- name: SHOW CONFIGURATION COMMANDS FOR THE ASA FW
+  hosts: "{{ target|default('localhost') }}"
+  connection: network_cli
+  gather_facts: no
+  strategy: linear
+
+  # ansible-playbook -i inventory.yml show_version_asa.yml -e target_host=asa-core-fw01.gcp01 -u admin -k
+
+  tasks:
+    - name: Get the version of the ASA FW
+      asa_command:
+        commands:
+          - show version | grep Ver
+      register: output
+
+    - name: Show the version of the ASA FW
+      debug:
+        msg: "{{ output.stdout_lines }}"
+

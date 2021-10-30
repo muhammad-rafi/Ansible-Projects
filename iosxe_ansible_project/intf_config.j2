@@ -1,0 +1,19 @@
+{% for item in ip_interfaces %}
+interface {{ item.intf_name }}
+ description {{ item.intf_description }}
+{% if item.intf_ipv4 is defined %}
+ ip address {{ item.intf_ipv4 }} {{ item.intf_ipv4_mask }}
+{% else %}
+ no ip address 
+{% endif %}
+{% if item.intf_speed is defined %}
+ no negotiation auto
+ speed {{ item.intf_speed }}
+{% endif %}
+{% if item.port_status == "up" %}
+ no shutdown
+{% elif item.port_status == "down" %}
+ shutdown
+{% endif %}
+ exit
+{% endfor %}

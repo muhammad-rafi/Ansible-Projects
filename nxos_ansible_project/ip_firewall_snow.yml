@@ -1,0 +1,29 @@
+---
+plugin: servicenow.servicenow.now
+table: cmdb_ci_firewall_network
+instance: dev67492 # https://dev67492.service-now.com/
+username: 'admin'
+password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          36653264346331623433626431333630386637373332666130313762633663343030313137343037
+          6434373930343337616338633564653837653333363163330a306436363733353063626138666435
+          36316266633030363066343939653961643061396661313538613039383565383330626362646538
+          3961636633363564650a316635616139343733396230646133396135323135373964666638303737
+          3031
+fields:
+  - fqdn
+  - name
+  - host_name
+  - ip_address
+  - device_type
+  - location
+  - manufacturer
+  - model_id
+  - model_number
+  - os
+keyed_groups:
+  - key: sn_manufacturer | lower
+    prefix: ''
+    separator: ''
+  - key: sn_location | lower
+    prefix: ''

@@ -1,0 +1,22 @@
+---
+- name: Gather NXOS Facts
+  #hosts: "{{ target|default('localhost') }}"
+  #hosts: platforms_nxos
+  hosts: sites_EVE_GCP 
+  gather_facts: false
+  connection: network_cli
+
+  # ansible-playbook playbooks/nxos_facts.yml -e target=nxos-core01.gcp01
+
+  tasks:
+
+    - name: Get Facts for NXOS
+      nxos_facts:
+        gather_subset: min
+        #gather_network_resources: interfaces
+      register: nxos_facts
+
+    - name: Show Facts for NXOS
+      debug:
+        var: nxos_facts
+

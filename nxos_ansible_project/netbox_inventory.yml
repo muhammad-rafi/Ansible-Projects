@@ -1,0 +1,18 @@
+---
+plugin: netbox
+api_endpoint: https://10.10.1.9/
+token: 1516c17aeba27d9048fc80161a45495901745ab4
+validate_certs: false
+config_context: false
+group_by:
+ - tags
+ - device_roles
+ - platforms
+ - sites
+compose:
+ ansible_network_os: platform.slug
+query_filters:
+ - status: "active"
+ #- site: "minnesota01"
+ #- has_primary_ip: True
+

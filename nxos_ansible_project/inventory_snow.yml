@@ -1,0 +1,10 @@
+---
+plugin: servicenow.servicenow.now
+instance: vdossupport 
+#username: 
+#password: 
+keyed_groups:
+  - key: sn_sys_class_name | lower
+    prefix: ''
+    separator: ''
+
