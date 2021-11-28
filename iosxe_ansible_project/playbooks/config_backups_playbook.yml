@@ -1,0 +1,21 @@
+---
+- name: IOSXE CONFIGURATION CONFIG VIA JINJA
+  hosts: IOSXE
+  connection: network_cli
+  gather_facts: no
+
+  # https://docs.ansible.com/ansible/latest/collections/cisco/ios/ios_config_module.html
+  # ansible-playbook -i inventory.yml playbook/config_backups_playbook.yml
+
+  tasks:
+    - name: save running config to startup
+      ios_config:
+        save_when: modified
+
+    - name: Save the configuration backups to a 'backups' directory in a project root folder  
+      ios_config:
+        backup: yes
+        backup_options:
+          filename: "{{ inventory_hostname }}.cfg"
+          dir_path: /opt/ansible/Ansible-Projects/iosxe_ansible_project/backups/
+

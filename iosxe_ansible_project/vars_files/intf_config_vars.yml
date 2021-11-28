@@ -1,0 +1,8 @@
+---
+ip_interfaces:
+  - intf_name: 'loopback 999'
+    intf_description: 'Configured via Ansible'
+    intf_ipv4: '10.99.99.99'
+    intf_ipv4_mask: '255.255.255.0'
+    # intf_speed: 1000
+    port_status: 'up'

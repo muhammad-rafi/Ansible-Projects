@@ -19,15 +19,25 @@ variable_manager = VariableManager(loader=loader, inventory=inventory)
 variable_manager._extra_vars = {
                                 "ip_interfaces":
 			                              [{
-				                              "intf_name": "GigabitEthernet 2",
+				                              "intf_name": "Loopback 999",
 				                              "intf_description": "Configured via Ansible",
-				                              "intf_ipv4": "10.1.1.1",
+				                              "intf_ipv4": "10.99.99.99",
 				                              "intf_ipv4_mask": "255.255.255.0",
-				                              "intf_speed": 1000,
+				                              # "intf_speed": 1000,
 				                              "port_status": "up"
-				                            }]
+                                    },
+                                    {
+                                      "intf_name": "Loopback 998",
+				                              "intf_description": "Configured via Ansible",
+				                              "intf_ipv4": "10.98.98.98",
+				                              "intf_ipv4_mask": "255.255.255.0",
+				                              # "intf_speed": 1000,
+				                              "port_status": "up"
+				                            }],
+                                    "ansible_user": "developer",
+                                    "ansible_password": "C1sco12345"
 			                          }
-playbook_path = '/opt/ansible/Ansible-Projects/iosxe_ansible_project/intf_config_playbook.yml'
+playbook_path = '/opt/ansible/Ansible-Projects/iosxe_ansible_project/playbooks/intf_config_playbook.yml'
 
 if not os.path.exists(playbook_path):
     print('[ERROR] The playbook does not exist')
@@ -41,7 +51,7 @@ context.CLIARGS = ImmutableDict(tags={},
                         connection='smart',
                         module_path=None,
                         forks=100,
-                        #remote_user='developer',
+                        # remote_user='developer',
                         # remote_pass=password,
                         private_key_file=None,
                         ssh_common_args=None,
@@ -61,5 +71,4 @@ play_ex = PlaybookExecutor(playbooks=[playbook_path], inventory=inventory, varia
 
 results = play_ex.run()
 
-
-print(dir(play_ex))
+print(play_ex)
