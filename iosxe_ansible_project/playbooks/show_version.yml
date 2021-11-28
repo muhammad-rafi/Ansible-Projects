@@ -4,7 +4,7 @@
   connection: local
   gather_facts: no
 
-  # ansible-playbook -i inventory.yml -e target_hosts=sandbox-iosxe-latest-1.cisco.com show_version.yml
+  # ansible-playbook -i inventory.yml -e target_hosts=sandbox-iosxe-latest-1.cisco.com playbooks/show_version.yml
 
   tasks:
     - name: GET THE IOS-XE SOFTWARE VERSION 
@@ -16,5 +16,5 @@
     - name: SHOW THE IOS-XE SOFTWARE VERSION
       debug:
         msg:
-          - "{{ ios_version }}" 
-          # - "{{ ios_version.stdout_lines[0][0] }}"
+          # - "{{ ios_version }}" 
+          - "{{ ios_version.stdout_lines[0][0] }}"

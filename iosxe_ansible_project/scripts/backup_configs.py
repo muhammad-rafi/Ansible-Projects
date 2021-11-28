@@ -23,8 +23,8 @@ events = list(runner.events)
 stats = runner.stats
 
 if runner.status == 'successful':
-    print("Configuration Backups are completed, please check 'backups' folder \n")
-    print(json.dumps(stats, indent=4))
+    print("Configuration Backups are completed!\n,please check 'backups' folder \n")
+    # print(json.dumps(stats, indent=4))
 else: 
     print(runner.status)
     print(json.dumps(stats, indent=4))
