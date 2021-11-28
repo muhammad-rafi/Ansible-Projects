@@ -12,7 +12,7 @@ from ansible.module_utils.common.collections import ImmutableDict
 loader = DataLoader()
 
 inventory = InventoryManager(loader=loader, 
-                            sources='/home/appdeveloper/iosxe-ansible/inventory.yml')
+                            sources='/opt/ansible/Ansible-Projects/iosxe_ansible_project/inventory.yml')
 
 variable_manager = VariableManager(loader=loader, inventory=inventory)
 
@@ -27,7 +27,7 @@ variable_manager._extra_vars = {
 				                              "port_status": "up"
 				                            }]
 			                          }
-playbook_path = '/home/appdeveloper/iosxe-ansible/intf_playbook.yml'
+playbook_path = '/opt/ansible/Ansible-Projects/iosxe_ansible_project/intf_config_playbook.yml'
 
 if not os.path.exists(playbook_path):
     print('[ERROR] The playbook does not exist')
