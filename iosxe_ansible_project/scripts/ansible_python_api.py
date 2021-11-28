@@ -11,21 +11,22 @@ from ansible.module_utils.common.collections import ImmutableDict
 
 loader = DataLoader()
 
-inventory = InventoryManager(loader=loader, sources='/home/appdeveloper/iosxe-ansible/inventory.yml')
+inventory = InventoryManager(loader=loader, 
+                            sources='/home/appdeveloper/iosxe-ansible/inventory.yml')
 
 variable_manager = VariableManager(loader=loader, inventory=inventory)
 
-variable_manager._extra_vars = {"ip_interfaces": [
-			           {
-				    "intf_name": "GigabitEthernet 2",
-				    "intf_description": "Configured via Ansible",
-				    "intf_ipv4": "10.1.1.1",
-				    "intf_ipv4_mask": "255.255.255.0",
-				    "intf_speed": 1000,
-				    "port_status": "up"
-				    }
-			          ]
-			        }
+variable_manager._extra_vars = {
+                                "ip_interfaces":
+			                              [{
+				                              "intf_name": "GigabitEthernet 2",
+				                              "intf_description": "Configured via Ansible",
+				                              "intf_ipv4": "10.1.1.1",
+				                              "intf_ipv4_mask": "255.255.255.0",
+				                              "intf_speed": 1000,
+				                              "port_status": "up"
+				                            }]
+			                          }
 playbook_path = '/home/appdeveloper/iosxe-ansible/intf_playbook.yml'
 
 if not os.path.exists(playbook_path):
@@ -62,4 +63,3 @@ results = play_ex.run()
 
 
 print(dir(play_ex))
-
