@@ -1,0 +1,19 @@
+---
+
+bgp:
+  local_as: 65001
+  router_id: 1.1.1.1
+  log_neighbor: True
+  neighbors:
+    - neighbor: 2.2.2.2
+      remote_as: 65002
+    - neighbor: 3.3.3.3
+      remote_as: 65003
+  networks:
+    - prefix: 192.168.10.0
+      masklen: 24
+    - prefix: 192.168.20.0
+      masklen: 23
+  address_family:
+    - afi: ipv4
+      safi: unicast

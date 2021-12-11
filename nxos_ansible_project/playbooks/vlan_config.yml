@@ -1,0 +1,16 @@
+---
+
+- name: VLAN CONFIGURATION
+  hosts: sandbox-nxos-1.cisco.com
+  connection: network_cli
+  gather_facts: false
+
+  tasks:
+      # Include the variable from vlan role
+    - include_vars:
+        dir: /opt/ansible/Ansible-Projects/iosxe_ansible_project/roles/vlan_create/vars/
+
+      # Include role from the role directory 
+    - include_role:
+        name: vlan_create
+        tasks_from: show_vlan.yml

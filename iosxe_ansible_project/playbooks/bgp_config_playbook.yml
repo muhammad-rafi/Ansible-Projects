@@ -5,18 +5,39 @@
   vars_files:
    - /opt/ansible/Ansible-Projects/iosxe_ansible_project/vars_files/bgp_config_vars.yml
 
-  # ansible-playbook -i inventory.yml playbooks/bgp_config.yml
+  # ansible-playbook -i inventory.yml playbooks/bgp_config_playbook.yml
 
   tasks:
-    - name: Generate IOS-XE BGP Config
-      template:
-        src: '/opt/ansible/Ansible-Projects/iosxe_ansible_project/templates/bgp_config.j2'
-        dest: '/opt/ansible/Ansible-Projects/iosxe_ansible_project/outputs/bgp_config_output.cfg'
-      register: output
+    - name: Configure BGP on IOSXE 
+      ios_bgp:
+        config:
+          bgp_as: "{{ bgp.local_as }}"
+          router_id: "{{ bgp.router_id }}"
+          log_neighbor_changes: "{{ bgp.log_neighbor }}"
+          # neighbors: 
+          #   - neighbor: "{{ item.neighbor }}"
+          #     remote_as: "{{ item.remote_as }}"
+          # with_items: "{{ bgp.neighbors }}"
+          networks:
+            - prefix: "{{ item.prefix }}"
+              masklen: "{{ item.masklen }}"
+          with_items: "{{ bgp.networks }}"
+          # address_family:
+          #   - afi: "{{ item.afi }}"
+          #     safi: "{{ item.safi }}"
+          # with_items: "{{ bgp.address_family }}"
+        operation: merge
+      register: output 
+
+    # - name: Generate IOS-XE BGP Config
+    #   template:
+    #     src: '/opt/ansible/Ansible-Projects/iosxe_ansible_project/templates/bgp_config.j2'
+    #     dest: '/opt/ansible/Ansible-Projects/iosxe_ansible_project/outputs/bgp_config_output.cfg'
+    #   register: output
 
     - name: Display output on the terminal 
-     debug:
-       var: output
+      debug:
+        var: output
 
     # - name: Configure BGP on IOS-XE via jinja2 tempalte
     #   ios_config:
