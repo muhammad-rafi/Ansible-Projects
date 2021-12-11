@@ -33,9 +33,9 @@ variable_manager._extra_vars = {
 				                              "intf_ipv4_mask": "255.255.255.0",
 				                              # "intf_speed": 1000,
 				                              "port_status": "up"
-				                            }],
-                                    "ansible_user": "developer",
-                                    "ansible_password": "C1sco12345"
+				                            }]
+                                    # "ansible_user": "developer",
+                                    # "ansible_password": "C1sco12345"
 			                          }
 playbook_path = '/opt/ansible/Ansible-Projects/iosxe_ansible_project/playbooks/intf_config_playbook.yml'
 
@@ -51,7 +51,7 @@ context.CLIARGS = ImmutableDict(tags={},
                         connection='smart',
                         module_path=None,
                         forks=100,
-                        # remote_user='developer',
+                        remote_user='developer',
                         # remote_pass=password,
                         private_key_file=None,
                         ssh_common_args=None,

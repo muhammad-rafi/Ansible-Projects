@@ -1,0 +1,29 @@
+router bgp {{ bgp.local_as }}
+  {% if bgp.vrf != '' -%}
+  address-family ipv4 vrf {{bgp.vrf}}
+        {% if bgp.router_id is not none -%}
+        bgp router-id {{ bgp.router_id }}
+        {% endif -%}
+        {% if bgp.neighbor is not none -%}
+        neighbor {{ bgp.neighbor }} remote-as {{ bgp.remote_as }}
+                {% if bgp.route_map is not none -%}
+        neighbor {{ bgp.neighbor }} route-map {{ bgp.route_map }} {{ bgp.direction }}
+                {% elif bgp.prefix_list is not none -%}
+        neighbor {{ bgp.neighbor }} prefix-list {{ bgp.prefix_list }} {{ bgp.direction }}
+                {% endif -%}
+        {% endif -%}
+  {% else %}
+        {% if bgp.router_id is not none -%}
+        bgp router-id {{ bgp.router_id }}
+        {% endif -%}
+        {% if bgp.neighbor is not none -%}
+        neighbor {{ bgp.neighbor }} remote-as {{ bgp.remote_as }}
+        {% endif -%}
+        address-family ipv4
+        {% if bgp.route_map != 'none' -%}
+        neighbor {{ bgp.neighbor }} route-map {{ bgp.route_map }} {{ bgp.direction }}
+        {% elif bgp.prefix_list != 'none' -%}
+        neighbor {{ bgp.neighbor }} prefix-list {{ bgp.prefix_list }} {{ bgp.direction }}
+        {% endif -%}
+        exit-address-family
+   {% endif -%}

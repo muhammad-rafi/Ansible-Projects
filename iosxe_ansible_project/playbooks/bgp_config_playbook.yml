@@ -1,0 +1,33 @@
+- name: IOSXE CONFIGURATION CONFIG VIA JINJA
+  hosts: sandbox-iosxe-latest-1.cisco.com
+  gather_facts: false
+  connection: network_cli
+  vars_files:
+   - /opt/ansible/Ansible-Projects/iosxe_ansible_project/vars_files/bgp_config_vars.yml
+
+  # ansible-playbook -i inventory.yml playbooks/bgp_config.yml
+
+  tasks:
+    - name: Generate IOS-XE BGP Config
+      template:
+        src: '/opt/ansible/Ansible-Projects/iosxe_ansible_project/templates/bgp_config.j2'
+        dest: '/opt/ansible/Ansible-Projects/iosxe_ansible_project/outputs/bgp_config_output.cfg'
+      register: output
+
+    - name: Display output on the terminal 
+     debug:
+       var: output
+
+    # - name: Configure BGP on IOS-XE via jinja2 tempalte
+    #   ios_config:
+    #     backup: no
+    #     src: '/opt/ansible/Ansible-Projects/iosxe_ansible_project/templates/bgp_config.j2'
+    #   when:
+    #     - ansible_network_os == 'ios'
+    #   register: bgp_config
+
+    # - name: Getting the interface configuration
+    #   debug:
+    #     var: bgp_config.updates
+
+        
