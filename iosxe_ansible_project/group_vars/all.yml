@@ -1,0 +1,7 @@
+---
+
+# ansible_ssh_common_args: -o StrictHostKeyChecking=no -o UserKnownHostsFile=~/.ssh/known_hosts  
+# ansible_connection: network_cli
+# ansible_network_os: ios
+# ansible_user: ansible
+# ansible_password: ansible
