@@ -1,5 +1,4 @@
 ---
-
 bgp:
   local_as: 65001
   router_id: 1.1.1.1
