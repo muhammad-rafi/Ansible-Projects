@@ -10,9 +10,9 @@ bgp:
       remote_as: 65003
   networks:
     - prefix: 192.168.10.0
-      masklen: 24
+      mask: 24
     - prefix: 192.168.20.0
-      masklen: 23
-  address_family:
-    - afi: ipv4
-      safi: unicast
+      mask: 23
+  # address_family:
+  #   - afi: ipv4
+  #     safi: unicast

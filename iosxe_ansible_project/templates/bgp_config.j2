@@ -1,30 +1,19 @@
 router bgp {{ bgp.local_as }}
-  {% if bgp.vrf is not none -%}
-  address-family ipv4 vrf {{bgp.vrf}}
-        {% if bgp.router_id is not none -%}
-        bgp router-id {{ bgp.router_id }}
-        {% endif -%}
-        {% if bgp.neighbor is not none -%}
-        {% for neighbor in bgp.neighbors -%}
-            neighbor {{ neighbor }} remote-as {{ neighbor.remote_as }}
-                {% if neighbor.route_map is not none -%}
-                    neighbor {{ neighbor }} route-map {{ neighbor.route_map }} {{ neighbor.direction }}
-                {% elif bgp.prefix_list is not none -%}
-                    neighbor {{ bgp.neighbor }} prefix-list {{ bgp.prefix_list }} {{ bgp.direction }}
-                {% endif -%}
-        {% endif -%}
-  {% else %}
         {% if bgp.router_id is not none -%}
             bgp router-id {{ bgp.router_id }}
         {% endif -%}
-        {% if bgp.neighbor is not none -%}
-            neighbor {{ bgp.neighbor }} remote-as {{ bgp.remote_as }}
+        log_neighbor {{ bgp.log_neighbor }}
+        {% if bgp.networks is not none -%}
+            {% for network in bgp.networks -%}
+                network {{ prefix }} mask {{ network.mask }}
+        {% if bgp.neighbors is not none -%}
+            {% for neighbor in bgp.neighbors -%}
+                neighbor {{ bgp.neighbor }} remote-as {{ bgp.remote_as }}
         {% endif -%}
-        address-family ipv4
-        {% if bgp.route_map != 'none' -%}
+        address-family ipv4 unicast 
+        {% if bgp.route_map is defined -%}
             neighbor {{ bgp.neighbor }} route-map {{ bgp.route_map }} {{ bgp.direction }}
-        {% elif bgp.prefix_list != 'none' -%}
+        {% elif bgp.prefix_list is defined -%}
             neighbor {{ bgp.neighbor }} prefix-list {{ bgp.prefix_list }} {{ bgp.direction }}
         {% endif -%}
         exit-address-family
-   {% endif -%}
