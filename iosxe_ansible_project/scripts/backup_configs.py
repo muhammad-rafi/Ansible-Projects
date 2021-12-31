@@ -40,6 +40,7 @@ def main():
         else: 
             print(runner.status)
             print(json.dumps(stats, indent=4))
+            
     except Exception as e: 
         print(e) 
         

@@ -1,19 +1,47 @@
+#jinja2: lstrip_blocks: True
 router bgp {{ bgp.local_as }}
-        {% if bgp.router_id is not none -%}
-            bgp router-id {{ bgp.router_id }}
-        {% endif -%}
-        log_neighbor {{ bgp.log_neighbor }}
-        {% if bgp.networks is not none -%}
-            {% for network in bgp.networks -%}
-                network {{ prefix }} mask {{ network.mask }}
-        {% if bgp.neighbors is not none -%}
-            {% for neighbor in bgp.neighbors -%}
-                neighbor {{ bgp.neighbor }} remote-as {{ bgp.remote_as }}
-        {% endif -%}
-        address-family ipv4 unicast 
-        {% if bgp.route_map is defined -%}
-            neighbor {{ bgp.neighbor }} route-map {{ bgp.route_map }} {{ bgp.direction }}
-        {% elif bgp.prefix_list is defined -%}
-            neighbor {{ bgp.neighbor }} prefix-list {{ bgp.prefix_list }} {{ bgp.direction }}
-        {% endif -%}
-        exit-address-family
+  {% if bgp.router_id is not none %}
+    bgp router-id {{ bgp.router_id }}
+  {% endif %}
+  {% if bgp.log_neighbor is true %}
+    bgp log-neighbor-changes
+  {% endif %}
+  {% if bgp.networks is not none %}
+    {% for network in bgp.networks %}
+    network {{ network.prefix }} mask {{ network.mask }}
+    {% endfor %}
+  {% endif %}
+  {% if bgp.neighbors is not none %}
+    {% for neighbor in bgp.neighbors %}
+    neighbor {{ neighbor.address }} remote-as {{ neighbor.remote_as }}
+    {% endfor %}
+  {% endif %}
+  address-family ipv4 unicast 
+  {% if bgp.route_map is defined %}
+    neighbor {{ bgp.neighbor }} route-map {{ bgp.route_map }} {{ bgp.direction }}
+  {% elif bgp.prefix_list is defined %}
+    neighbor {{ bgp.neighbor }} prefix-list {{ bgp.prefix_list }} {{ bgp.direction }}
+  {% endif %}
+  exit-address-family
+  {% if bgp.vrfs is defined %}
+    {% for vrf in bgp.vrfs %}
+    address-family ipv4 vrf {{ vrf.name }}
+      {% if vrf.neighbors is defined %}
+        {% for neighbor in vrf.neighbors %}
+      neighbor {{ neighbor.address }} remote-as {{ neighbor.remote_as }}
+          {% if neighbor.activate is true %}
+      neighbor {{ neighbor.address }} activate
+          {% endif %}
+          {% if neighbor.route_maps is defined %}
+            {% for rm in neighbor.route_maps %}
+      neighbor {{ neighbor.address }} route-map {{ rm.name }} {{ rm.direction }}
+            {% endfor %}
+          {% elif neighbor.prefix_lists is defined %}
+            {% for pl in neighbor.prefix_lists %}
+      neighbor {{ neighbor.address }} prefix-list {{ pl.name }} {{ pl.direction }}
+            {% endfor %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}

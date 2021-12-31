@@ -4,15 +4,37 @@ bgp:
   router_id: 1.1.1.1
   log_neighbor: True
   neighbors:
-    - neighbor: 2.2.2.2
+    - address: 2.2.2.2
       remote_as: 65002
-    - neighbor: 3.3.3.3
+    - address: 3.3.3.3
       remote_as: 65003
   networks:
     - prefix: 192.168.10.0
-      mask: 24
+      mask: 255.255.255.0
     - prefix: 192.168.20.0
-      mask: 23
-  # address_family:
-  #   - afi: ipv4
-  #     safi: unicast
+      mask: 255.255.255.0
+  vrfs: 
+    - name: Tenant1
+      # router_id: 1.1.1.1
+      neighbors:
+        - address: 4.4.4.4
+          remote_as: 65004
+          activate: True 
+          route_maps: 
+            - name: Tenant_1_RMAP_OUT
+              direction: out 
+            - name: Tenant_1_RMAP_IN
+              direction: in 
+    - name: Tenant2
+      # router_id: 1.1.1.1
+      neighbors:
+        - address: 5.5.5.5
+          remote_as: 65005
+          activate: False 
+          prefix_lists:
+            - name: Tenant_1_PL_OUT
+              direction: out 
+            - name: Tenant_1_PL_IN
+              direction: in 
+
+

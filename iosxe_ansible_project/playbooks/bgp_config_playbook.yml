@@ -40,16 +40,16 @@
     #   debug:
     #     var: output
 
-    # - name: Configure BGP on IOS-XE via jinja2 tempalte
-    #   ios_config:
-    #     backup: no
-    #     src: '/opt/ansible/Ansible-Projects/iosxe_ansible_project/templates/bgp_config.j2'
-    #   when:
-    #     - ansible_network_os == 'ios'
-    #   register: bgp_config
+    - name: Configure BGP on IOS-XE via jinja2 tempalte
+      ios_config:
+        backup: no
+        src: '/opt/ansible/Ansible-Projects/iosxe_ansible_project/templates/bgp_config.j2'
+      when:
+        - ansible_network_os == 'ios'
+      register: bgp_config
 
-    # - name: Getting the interface configuration
-    #   debug:
-    #     var: bgp_config.updates
+    - name: Getting the interface configuration
+      debug:
+        var: bgp_config.updates
 
         
