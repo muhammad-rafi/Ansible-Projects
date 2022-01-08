@@ -35,13 +35,13 @@
     # - name: Check the the result output is a dictionary 
     #   debug: var="result.response | type_debug == 'dict'"
     
-    # - name: Get the list of interfaces name from the result output 
-    #   debug: msg="{{ result['response']['ietf-interfaces:interface'] | json_query('[*].name') }}"
+    - name: Get the list of interfaces name from the result output 
+      debug: msg="{{ result['response']['ietf-interfaces:interface'] | json_query('[*].name') }}"
 
-    - name: Get the list of interfaces config from the result output 
-      debug: msg="{{ item.name }}"
-      with_items:
-        - "{{ result['response']['ietf-interfaces:interface'] | list }}"
+    # - name: Get the list of interfaces config from the result output 
+    #   debug: msg="{{ item.name }}"
+    #   with_items:
+    #     - "{{ result['response']['ietf-interfaces:interface'] | list }}"
 
     - name: Set the variable for the desired interfaces and current interfaces 
       set_fact:
