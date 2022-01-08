@@ -1,5 +1,7 @@
 ---
 collections:
-  - servicenow.servicenow
-  - netbox.netbox
-  - cisco.nxos
+  - name: servicenow.servicenow
+  - name: netbox.netbox
+  - name: cisco.nxos
+  - name: cisco.ios
+  - name: ansible.netcommon

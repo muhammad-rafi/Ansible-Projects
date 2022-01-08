@@ -1,0 +1,45 @@
+---
+- name: Restconf playbook for NXOS for Native Yang Model
+  hosts: sandbox-nxos-1.cisco.com
+  gather_facts: false
+  # connection: httpapi
+  connection: ansible.netcommon.httpapi
+  # collections:
+  #   - ansible.netcommon
+
+  vars:
+    # ansible_user: admin
+    # ansible_password: Admin_1234!
+    ansible_httpapi_port: 443
+    ansible_httpapi_use_ssl: yes
+    ansible_httpapi_validate_certs: false
+    ansible_network_os: restconf
+    # ansible_network_os: ansible.netcommon.restconf
+
+  tasks:
+    - name: Get NXOS device config - system yang model 
+      ansible.netcommon.restconf_get:
+        content: config
+        output: json
+        path: /data/Cisco-NX-OS-device:System/
+      register: system_output
+
+    - debug: var=system_output.response
+
+    - name: Get NXOS device hostname
+      ansible.netcommon.restconf_get:
+        content: all
+        output: json
+        path: /data/Cisco-NX-OS-device:System/name/
+      register: hostname_output
+
+    - debug: var=hostname_output.response
+
+    - name: Get NTP config for nxos 
+      ansible.netcommon.restconf_get:
+        content: all
+        output: json
+        path: /data/Cisco-NX-OS-device:System/time-items/prov-items/
+      register: restconf_ntp_output
+
+    - debug: var=restconf_ntp_output.response

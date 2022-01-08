@@ -1,0 +1,32 @@
+---
+# check var: method in the playbook 
+# For 'post' method, all of the below interfaces should not be exist, otherwise will be skipped.
+# For 'put' or 'patch', update the fields for one interface at a time in the below interface configurations
+# Use 'delete' to delete the following interfaces 
+interface:
+  - name: Loopback222
+    description: configured via ansible test1
+    # description: updated via patch operation
+    type: iana-if-type:softwareLoopback
+    enabled: true
+    ietf-ip:ipv4:
+      address:
+      - ip: 10.0.222.10
+        netmask: 255.255.255.255
+  - name: Loopback223
+    description: configured via ansible test2
+    # description: updated via put operation
+    type: iana-if-type:softwareLoopback
+    enabled: true
+    ietf-ip:ipv4:
+      address:
+      - ip: 10.0.223.10
+        netmask: 255.255.255.255
+  - name: Loopback224
+    description: configured via ansible test3
+    type: iana-if-type:softwareLoopback
+    enabled: true
+    ietf-ip:ipv4:
+      address:
+      - ip: 10.0.224.10
+        netmask: 255.255.255.255

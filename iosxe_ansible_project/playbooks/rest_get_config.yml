@@ -1,0 +1,50 @@
+---
+- name: Restconf playbook for IOSXE for Native Yang Model
+  hosts: sandbox-iosxe-latest-1.cisco.com
+  gather_facts: false
+  connection: httpapi
+
+  vars:
+    ansible_user: developer
+    ansible_password: C1sco12345
+    ansible_httpapi_port: 443
+    ansible_httpapi_use_ssl: yes
+    ansible_httpapi_validate_certs: false
+    ansible_network_os: restconf
+
+  tasks:
+    - name: Get IOSXE capabilities 
+      restconf_get:
+        content: nonconfig
+        output: json
+        path: /data/netconf-state/capabilities
+      register: get_capabilities
+
+    - debug: var=get_capabilities.response
+
+    - name: Get IOSXE native yang config
+      restconf_get:
+        content: config
+        output: json
+        path: /data/Cisco-IOS-XE-native:native/
+      register: json_config_output
+
+    - debug: var=json_config_output
+
+    - name: Get IOSXE native interfaces config
+      restconf_get:
+        content: config
+        output: json
+        path: /data/Cisco-IOS-XE-native:native/interface/
+      register: restconf_intf_output
+
+    - debug: var=restconf_intf_output.response
+
+    - name: Get IOSXE native os version 
+      restconf_get:
+        content: all
+        output: json
+        path: /data/Cisco-IOS-XE-native:native/version/
+      register: os_version_output
+
+    - debug: var=os_version_output.response

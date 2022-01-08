@@ -1,0 +1,163 @@
+---
+- name: Restconf playbook for IOSXE Loopbacks
+  hosts: sandbox-iosxe-latest-1.cisco.com
+  gather_facts: false
+  # connection: ansible.netcommon.httpapi
+  connection: httpapi
+  # collections:
+  #   - ansible.netcommon
+
+  vars:
+    ansible_user: developer
+    ansible_password: C1sco12345
+    ansible_httpapi_port: 443
+    ansible_httpapi_use_ssl: yes
+    ansible_httpapi_validate_certs: false
+    ansible_network_os: restconf
+    # ansible_network_os: ansible.netcommon.restconf
+    ansible_python_interpreter: /usr/bin/python
+    method: 'post' # post, put, patch or delete 
+
+  tasks:
+    - name: Define loopback interface config variable file 
+      include_vars:
+        file: /opt/ansible/Ansible-Projects/iosxe_ansible_project/vars_files/loop_intf_config.yml
+        name: intf_vars_file
+
+    - name: Pre-checks if interfaces already exist
+      ansible.netcommon.restconf_get:
+        path: "/data/ietf-interfaces:interfaces/interface"
+        # path: "/data/ietf-interfaces:interfaces/interface={{ item }}"
+      # with_items: "{{ intf_vars_file | json_query('interface[*].name') }}"
+      register: result
+      ignore_errors: True 
+
+    # - name: Check the the result output is a dictionary 
+    #   debug: var="result.response | type_debug == 'dict'"
+    
+    # - name: Get the list of interfaces name from the result output 
+    #   debug: msg="{{ result['response']['ietf-interfaces:interface'] | json_query('[*].name') }}"
+
+    - name: Get the list of interfaces config from the result output 
+      debug: msg="{{ item.name }}"
+      with_items:
+        - "{{ result['response']['ietf-interfaces:interface'] | list }}"
+
+    - name: Set the variable for the desired interfaces and current interfaces 
+      set_fact:
+        have_intf: "{{ result['response']['ietf-interfaces:interface'] | json_query('[*].name') }}"
+        want_intf: "{{ intf_vars_file | json_query('interface[*].name') }}"
+    
+    # - debug: msg="{{ have_intf[1:] | list }}"
+    
+    - name: Validating the interface(s) for post operation 
+      assert: 
+        that: 
+          - "'{{ item }}' in {{ have_intf[1:] | list }}" 
+        fail_msg: "Interface(s) dont exist"
+        success_msg: "Interface(s) already exist"
+        # msg: "Interface(s) dont exist"
+      with_items: "{{ want_intf }}"
+      register: assert_post_result
+      ignore_errors: True 
+      when: method == 'post' 
+
+    - name: Exit the play when any Assertions is passed from the above task 
+      ansible.builtin.meta: end_play
+      when: "'Interface(s) already exist' in assert_post_result.results | json_query('[*].msg')" 
+
+    - name: Validating the interface(s) for put/patch operation 
+      assert: 
+        that: 
+          - "'{{ item }}' in {{ have_intf[1:] | list }}" 
+        # fail_msg: "Interface doesnt exist"
+        # success_msg: "Interface already exists"
+        msg: "Interface doesnt exist"
+      with_items: "{{ want_intf }}"
+      register: assert_put_result
+      ignore_errors: True 
+      when: method == 'put' or method == 'patch'
+
+    - name: Exit the play when any Assertions is passed from the above task 
+      ansible.builtin.meta: end_play
+      when: "'Interface doesnt exist' in assert_put_result.results | json_query('[*].msg')" 
+
+    - name: Updating the interface configuration via put operation 
+      ansible.netcommon.restconf_config:
+        path: "/data/ietf-interfaces:interfaces/interface={{ item }}"
+        method: "put"
+        content: "{{ intf_vars_file | to_json }}"
+      with_items: "{{ intf_vars_file | json_query('interface[*].name') }}"
+      register: restconf_put_result
+      ignore_errors: True
+      when: method == 'put' 
+
+    # - debug: msg="{{ assert_put_result.results | json_query('[*].msg')}}"
+
+    - name: Updating the interface configuration via patch operation 
+      ansible.netcommon.restconf_config:
+        path: "/data/ietf-interfaces:interfaces/interface={{ item }}"
+        method: "patch"
+        content: "{{ intf_vars_file | to_json }}"
+      with_items: "{{ intf_vars_file | json_query('interface[*].name') }}"
+      register: restconf_put_result
+      ignore_errors: True
+      when: method == 'patch'
+
+    - name: Add interface(s) to IOSXE 
+      ansible.netcommon.restconf_config:
+        path: "/data/ietf-interfaces:interfaces"
+        method: "post"
+        content: "{{ intf_vars_file | to_json }}"
+      register: restconf_post_result
+      ignore_errors: True
+      when: method == 'post'
+
+    - name: Verify the configuration 
+      ansible.netcommon.restconf_get:
+        path: "/data/ietf-interfaces:interfaces/interface={{ item }}"
+      with_items: "{{ intf_vars_file | json_query('interface[*].name') }}"
+      register: restconf_get_result
+      when: method == 'post' or method == 'put' or method == 'patch'
+
+    - name: Display the configuration 
+      debug:
+        var: restconf_get_result.results
+      when: method == 'post' or method == 'put' or method == 'patch'
+
+    - name: Validating the interface(s) for delete operation 
+      assert: 
+        that: 
+          - "'{{ item }}' in {{ have_intf[1:] | list }}" 
+        # fail_msg: "Interface(s) dont exist"
+        # success_msg: "Interface(s) already exist"
+        msg: "Interface(s) dont exist"
+      with_items: "{{ want_intf }}"
+      register: assert_delete_result
+      ignore_errors: True 
+      when: method == 'delete' 
+
+    - name: Exit the play when any Assertions is failed from the above task 
+      ansible.builtin.meta: end_play
+      when: "'Interface(s) dont exist' in assert_delete_result.results | json_query('[*].msg')" 
+
+    - name: Delete the interface(s) from IOSXE 
+      ansible.netcommon.restconf_config:
+        path: "/data/ietf-interfaces:interfaces/interface={{ item }}"
+        method: "delete"
+      with_items: "{{ intf_vars_file | json_query('interface[*].name') }}"
+      register: restconf_del_result
+      ignore_errors: True
+      when: method == 'delete'
+      notify: 
+        - Get the list of all interface(s) from IOSXE
+        - Display the list of all interface(s) from IOSXE 
+
+  handlers:
+    - name: Get the list of all interface(s) from IOSXE 
+      ansible.netcommon.restconf_get:
+        path: "/data/ietf-interfaces:interfaces"
+      register: restconf_get_intf
+
+    - name: Display the list of all interface(s) from IOSXE 
+      debug: msg="{{ restconf_get_intf }}"
