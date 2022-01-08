@@ -104,7 +104,7 @@
       ignore_errors: True
       when: method == 'patch'
 
-    - name: Add interface(s) to IOSXE 
+    - name: Add loopback interface(s) to IOSXE 
       ansible.netcommon.restconf_config:
         path: "/data/ietf-interfaces:interfaces"
         method: "post"
@@ -141,7 +141,7 @@
       ansible.builtin.meta: end_play
       when: "'Interface(s) dont exist' in assert_delete_result.results | json_query('[*].msg')" 
 
-    - name: Delete the interface(s) from IOSXE 
+    - name: Delete the loopback interface(s) from IOSXE 
       ansible.netcommon.restconf_config:
         path: "/data/ietf-interfaces:interfaces/interface={{ item }}"
         method: "delete"

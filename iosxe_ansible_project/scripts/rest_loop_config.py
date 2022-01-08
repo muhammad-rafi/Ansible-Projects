@@ -32,7 +32,7 @@ def main():
         #     print(event['event'])
         
         if runner.status == 'successful':
-            print("Loopback interface(s) have been configure successfully.\n")
+            print("Loopback interface(s) have been configured successfully.\n")
             # print(json.dumps(stats, indent=4))
         else: 
             print(runner.status)
