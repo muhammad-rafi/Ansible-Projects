@@ -7,7 +7,8 @@ import json
 def main():
     """
     Run the playbook defined inside the function,
-    and backup the configuration of iosxe device.
+    and configure the loop on iosxe device via 
+    restconft.
     """
     
     playbook = "/opt/ansible/Ansible-Projects/iosxe_ansible_project/playbooks/rest_loop_playbook.yml"
@@ -32,7 +33,7 @@ def main():
         #     print(event['event'])
         
         if runner.status == 'successful':
-            print("Loopback interface(s) have been configure successfully.\n")
+            print("Loopback interface(s) have been configured successfully.\n")
             # print(json.dumps(stats, indent=4))
         else: 
             print(runner.status)

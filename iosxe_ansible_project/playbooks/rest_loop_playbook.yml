@@ -16,7 +16,7 @@
     ansible_network_os: restconf
     # ansible_network_os: ansible.netcommon.restconf
     ansible_python_interpreter: /usr/bin/python
-    method: 'post' # post, put, patch or delete 
+    method: 'delete' # post, put, patch or delete 
 
   tasks:
     - name: Define loopback interface config variable file 
