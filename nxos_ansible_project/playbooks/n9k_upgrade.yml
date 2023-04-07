@@ -1,0 +1,214 @@
+---
+
+- name: NXOS 9K Upgrade Playbook
+  hosts: NXOS
+  gather_facts: false
+  connection: network_cli
+
+  ## Note: I mentioned three ways to take the scp_password i.e. under vars, 
+  ## vars_prompt or via pause and set_facts modules.
+  ## This playbook is only build to upgrade the NXOS device(s), you
+  ## may need to create different playbooks to run other checks like vpc, 
+  ## layer2/3 etc. before and after the upgrade.
+
+  ##
+
+  ## Required variables to run the playbook 
+  vars:
+    target_nxos_ver: 9.3(9)
+    target_image: nxos.9.3.9.bin
+    target_image_md5: d3b544052764e61302d680877bbe02c4
+    protocol: scp 
+    scp_user: scpuser
+    scp_password: scpP4ssw0rd
+    scp_server: myscpserver.com
+    vrf: management
+    install_check_mode: "no"
+
+  ## Uncomment this if you like to prompt the user to enter the scp server 
+  ## details for security reasons, rather than defining as above in the vars.
+  # vars_prompt:
+  #   - name: "scp_server"
+  #     prompt: "Enter SCP Server"
+  #     private: no
+  #   - name: "scp_user"
+  #     prompt: "Enter SCP User"
+  #     private: no
+  #   - name: "scp_password"
+  #     prompt: "Enter SCP Password"
+  #     private: yes
+
+  # $ ansible-playbook playbooks/n9k_upgrade.yml -u admin -k
+
+  tasks:
+    - name: Backup the config for {{ inventory_hostname }}
+      tags: backup, install
+      nxos_config:
+        backup: yes
+        backup_options:
+          filename: "{{ inventory_hostname }}_backup.cfg"
+          dir_path: ./backup
+      register: config_output
+      
+    - name: Get current NXOS version in JSON format
+      tags: pre-check, check-version, post-check
+      nxos_command:
+        commands: show version | json-pretty
+      register: show_version
+
+    - name: Set current NXOS version as variable
+      tags: pre-check, check-version, post-check
+      # debug: msg="{{ show_version.stdout_lines[0].nxos_ver_str }}"
+      set_fact:
+        current_nxos_ver: "{{ show_version['stdout_lines'][0]['nxos_ver_str'] }}"
+
+    - name: Assert that switch is NOT running with the target NXOS version
+      tags: pre-check, check-version
+      assert:
+        quiet: no
+        success_msg: "{{ inventory_hostname }} not running target verion {{ target_nxos_ver }}, current version is {{ current_nxos_ver }}"
+        fail_msg: "{{ inventory_hostname }} already running {{ current_nxos_ver }}"
+        that:
+        - "'{{ current_nxos_ver }}' != '{{ target_nxos_ver }}'"
+
+    - name: Check if switch has the target image in the "bootflash:" directory 
+      tags: pre-check, install, image-check, image-copy
+      nxos_command:
+        commands: "dir bootflash: | in {{ target_image }} | awk '{ print $6 }'"
+      register: image_check
+
+    - name: Copy NXOS Image if does NOT exists in the bootflash dir
+      block:
+        - name: Assert Bootflash does NOT contain target image before copy
+          tags: image-copy
+          assert:
+            quiet: no
+            success_msg: '{{ target_image }} NOT in bootflash'
+            fail_msg: '{{ target_image }} was found in bootflash'
+            that:
+              - "'{{ image_check.stdout[0] }}' != '{{ target_image }}'"
+
+        - name: Would you like to copy the NXOS image via {{ protocol | upper }}?
+          tags: image-copy
+          pause:
+            prompt: "Press enter to continue or cntrl-c + a to abort"
+
+        ## Uncomment this if you like only secure scp password under the task instead of variable.
+        # - name: SCP Password
+        #   pause:
+        #     prompt: "Please Enter the SCP Password: "
+        #     echo: no
+        #   register: result
+
+        # - name: Set SCP Password as fact
+        #   set_fact:
+        #     scp_password: "{{ result.user_input }}"
+        # # - debug:
+        # #     var: scp_password
+
+        ## TODO: Check if password is correct before proceed to the next step.
+
+        - name: Copy NXOS image file from {{ scp_server }} via {{ protocol | upper }} server
+          tags: image-copy
+          nxos_command:
+            commands: 
+            - command: 'clear ssh hosts'  
+            - command: 'copy {{ protocol }}://{{ scp_user }}@{{ scp_server }}/{{ target_image }} bootflash: vrf {{ vrf }} use-kstack'
+              check_all: True  
+              prompt:
+                - "Are you sure you want to continue connecting (yes/no)?"
+                - "Password:"
+              answer:
+                - 'yes'
+                - "{{ scp_password }}"
+          no_log: false
+          register: image_copy
+
+        - name: Get MD5 Checksum for the Target Image
+          tags: image-validate
+          nxos_command:
+            commands: 'show file bootflash:{{ target_image }} md5sum' 
+          register: image_md5
+
+        - name: Assert MD5 Image File Validation
+          tags: image-validate
+          assert:
+            quiet: no
+            success_msg: 'MD5 checksum validation successful'
+            fail_msg: 'MD5 checksum validation failed, Corrupted Image!'
+            that:
+              - "'{{ image_md5.stdout[0] }}' == '{{ target_image_md5 }}'"
+          changed_when: false
+          register: image_validation_result
+          
+        - name: Check Passed
+          tags: pre-check
+          debug: msg=" {{ inventory_hostname }} passed all the checks."
+
+      rescue:
+        - name: Checks Status
+          debug: msg='Some checks are failed, please review the output...'
+
+    - name: Preparing to upgrade the NXOS software, this will be a disruptive operation to the devices
+      tags: install
+      pause:
+        prompt: "Press enter to continue or cntrl-c + a to abort"
+      when: current_nxos_ver == target_nxos_ver
+
+    - name: Install/Upgrade NXOS Software
+      block:
+        - name: Installing Target NXOS {{ target_nxos_ver }}
+          tags: install
+          check_mode: '{{ install_check_mode }}'
+          nxos_install_os:
+            system_image_file: '{{ target_image }}'
+            issu: no
+          register: install_output
+          vars:
+            ansible_command_timeout: 600
+            ansible_connect_timeout: 600
+
+        - name: print Install Results
+          tags: install
+          debug: var=install_output.install_state
+
+      rescue:
+        - name: Waiting For {{ inventory_hostname }} To Come Back Up
+          wait_for:
+            host: "{{ (ansible_ssh_host|default(ansible_host))|default(inventory_hostname) }}"
+            port: 22
+            state: started
+            timeout: 300
+            delay: 60
+      
+      always:
+        - name: Assert that switch is running with the target NXOS version {{ target_nxos_ver }} After Upgrade
+          tags: post-check
+          assert:
+            quiet: no
+            success_msg: "{{ inventory_hostname }} has been upgraded to {{ current_nxos_ver }}"
+            fail_msg: "Failed to upgrade the {{ inventory_hostname }}, it is still runninng {{ current_nxos_ver }}"
+            that:
+              - "'{{ current_nxos_ver }}' == '{{ target_nxos_ver }}'"
+
+    - name: Do you wish to delete old images from the device?
+      tags: image-delete
+      pause:
+        prompt: "Press enter to continue or cntrl-c + a to abort"
+
+    - name: Check and register the old image(s) as variable 
+      tags: image-delete
+      nxos_command:
+        commands: "dir bootflash: | in nxos. | ex {{ target_image }} | awk '{ print $6 }'"
+      register: delete_image
+
+    - debug: 
+        var: item
+      with_items: "{{ delete_image.stdout_lines }}"
+      tags: image-delete
+
+    - name: Delete an image from the bootflash directory
+      tags: image-delete
+      nxos_command:
+        commands: ["delete {{ item }} no-prompt"]
+      with_items: "{{ delete_image.stdout_lines }}"
