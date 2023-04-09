@@ -63,7 +63,7 @@
         current_nxos_ver: "{{ show_version['stdout_lines'][0]['nxos_ver_str'] }}"
 
     - name: Assert that switch is NOT running with the target NXOS version
-      tags: pre-check, check-version
+      tags: pre-check, check-version, install
       assert:
         quiet: no
         success_msg: "{{ inventory_hostname }} not running target verion {{ target_nxos_ver }}, current version is {{ current_nxos_ver }}"
@@ -72,7 +72,7 @@
         - "'{{ current_nxos_ver }}' != '{{ target_nxos_ver }}'"
 
     - name: Check if switch has the target image in the "bootflash:" directory 
-      tags: pre-check, install, image-check, image-copy
+      tags: pre-check, image-check, image-copy, install
       nxos_command:
         commands: "dir bootflash: | in {{ target_image }} | awk '{ print $6 }'"
       register: image_check
@@ -80,7 +80,7 @@
     - name: Copy NXOS Image if does NOT exists in the bootflash dir
       block:
         - name: Assert Bootflash does NOT contain target image before copy
-          tags: image-copy
+          tags: image-copy, install
           assert:
             quiet: no
             success_msg: '{{ target_image }} NOT in bootflash'
@@ -89,7 +89,7 @@
               - "'{{ image_check.stdout[0] }}' != '{{ target_image }}'"
 
         - name: Would you like to copy the NXOS image via {{ protocol | upper }}?
-          tags: image-copy
+          tags: image-copy, install
           pause:
             prompt: "Press enter to continue or cntrl-c + a to abort"
 
@@ -109,7 +109,7 @@
         ## TODO: Check if password is correct before proceed to the next step.
 
         - name: Copy NXOS image file from {{ scp_server }} via {{ protocol | upper }} server
-          tags: image-copy
+          tags: image-copy, install
           nxos_command:
             commands: 
             - command: 'clear ssh hosts'  
@@ -125,13 +125,13 @@
           register: image_copy
 
         - name: Get MD5 Checksum for the Target Image
-          tags: image-validate
+          tags: image-validate, install
           nxos_command:
             commands: 'show file bootflash:{{ target_image }} md5sum' 
           register: image_md5
 
         - name: Assert MD5 Image File Validation
-          tags: image-validate
+          tags: image-validate, install
           assert:
             quiet: no
             success_msg: 'MD5 checksum validation successful'
@@ -142,7 +142,7 @@
           register: image_validation_result
           
         - name: Check Passed
-          tags: pre-check
+          tags: pre-check, install
           debug: msg=" {{ inventory_hostname }} passed all the checks."
 
       rescue:
@@ -167,10 +167,12 @@
           vars:
             ansible_command_timeout: 600
             ansible_connect_timeout: 600
+          when: current_nxos_ver != target_nxos_ver
 
         - name: print Install Results
           tags: install
           debug: var=install_output.install_state
+          when: current_nxos_ver != target_nxos_ver
 
       rescue:
         - name: Waiting For {{ inventory_hostname }} To Come Back Up
@@ -183,7 +185,7 @@
       
       always:
         - name: Assert that switch is running with the target NXOS version {{ target_nxos_ver }} After Upgrade
-          tags: post-check
+          tags: post-check, install
           assert:
             quiet: no
             success_msg: "{{ inventory_hostname }} has been upgraded to {{ current_nxos_ver }}"
