@@ -49,15 +49,15 @@
           filename: "{{ inventory_hostname }}_backup.cfg"
           dir_path: ./backup
       register: config_output
-      
+
     - name: Get current NXOS version in JSON format
-      tags: pre-check, check-version, post-check
+      tags: pre-check, check-version, post-check, install
       nxos_command:
         commands: show version | json-pretty
       register: show_version
 
     - name: Set current NXOS version as variable
-      tags: pre-check, check-version, post-check
+      tags: pre-check, check-version, post-check, install
       # debug: msg="{{ show_version.stdout_lines[0].nxos_ver_str }}"
       set_fact:
         current_nxos_ver: "{{ show_version['stdout_lines'][0]['nxos_ver_str'] }}"
@@ -153,7 +153,7 @@
       tags: install
       pause:
         prompt: "Press enter to continue or cntrl-c + a to abort"
-      when: current_nxos_ver == target_nxos_ver
+      when: current_nxos_ver != target_nxos_ver
 
     - name: Install/Upgrade NXOS Software
       block:
