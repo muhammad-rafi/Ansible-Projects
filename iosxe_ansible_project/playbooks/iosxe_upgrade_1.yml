@@ -1,0 +1,333 @@
+---
+
+- name: IOSXE Upgrade Playbook
+  hosts: icn01-vpn00-pe02.webex.com
+  gather_facts: false
+  connection: network_cli
+
+  # Ansible: 2.9.26
+  # pip install pyats genie
+  # ansible-galaxy install -r requirements.yml (https://github.com/CiscoDevNet/ansible-pyats)
+
+  vars:
+    target_xe_ver: 17.06.03a
+    target_image_path: /users/muhammadrafi
+    target_image: c8000aep-universalk9.17.06.03a.SPA.bin
+    target_image_size: 699286261
+    target_image_md5: 2a21c50b04cb218e15780de02e120044
+    protocol: scp
+    scp_user: admin
+    scp_password: 4dminPa4s
+    scp_server: 10.1.5.10
+    ftp_user: ftpuser 
+    ftp_password: ftpassword
+    ftp_path: images/c8000aep
+    ftp_server: 10.2.5.10
+    vrf: mgmt-vrf
+    install_check_mode: "no"
+    method: 1 # 1 is for PyATS and 2 for Ansible Facts
+
+  roles:
+    - ansible-pyats
+
+  tasks:
+    - name: Gather facts for IOSXE
+      tags: pre-check, check-version, install
+      ios_facts:
+        gather_subset:
+          - 'hardware'
+  
+    - name: Basic Facts for "{{ inventory_hostname }}"
+      vars:
+        msg: |
+          Device Mode: {{ ansible_net_model }}
+          Serial Number: {{ ansible_net_serialnum }}
+          IOSXE Version: {{ ansible_net_version }}
+          IOSXE Image: {{ ansible_net_image }}
+          Free Memory (Mb): {{ ansible_net_memfree_mb }}
+          Total Memory (Mb): {{ ansible_net_memtotal_mb }}
+          Free Diskspace (kb): {{ ansible_net_filesystems_info['bootflash:']['spacefree_kb'] }}
+          Total Diskspace (kb): {{ansible_net_filesystems_info['bootflash:']['spacetotal_kb'] }}
+      debug:
+        msg: "{{ msg.split('\n') }}"
+      tags: pre-check, check-version, install
+
+    - name: Set the current time as a fact
+      tags: backup, install
+      set_fact: timestamp="{{ lookup('pipe','date \"+%Y-%m-%d-%H-%M\"') }}"
+
+    ## First Method to run the backup
+    - name: Config Backup for {{ inventory_hostname }}
+      tags: backup, install
+      ios_config:
+        backup: yes
+        backup_options:
+          filename: "{{ inventory_hostname }}_backup_{{ timestamp }}.cfg"
+          dir_path: ./backup
+      register: config_output
+      when: method == 1
+
+    ## Second Method to run the backup
+    - name: Get running-config for {{ inventory_hostname }}
+      tags: backup, install
+      ios_command:
+        commands:
+          - show running-config
+      register: running_config_output
+      when: method == 2
+
+    - name: Save running-config to file
+      tags: backup, install
+      copy:
+        content: "{{ running_config_output.stdout[0] }}"
+        dest: "./backup/{{ inventory_hostname }}-{{ timestamp }}.cfg"
+      when: method == 2
+
+    - debug: msg="Starting pre-checks ..."
+      tags: pre-check, install
+
+    ## First Method to pull IOSXE version with PyATS and compare it with the targer version
+    - name: Get current IOSXE version
+      tags: pre-check, check-version, post-check, install
+      ios_command:
+        commands: 
+          - show version
+      register: show_version
+      when: method == 1
+
+    - name: Set fact for the current IOSXE version with PyATS 
+      tags: pre-check, check-version, post-check, install
+      set_fact:
+        # sh_ver_parsed: "{{ show_version['stdout'][0] | parse_genie(command='show version', os='iosxe') }}"
+        current_xe_ver: "{{ show_version['stdout'][0] | pyats_parser('show version', 'iosxe') }}"
+      when: method == 1
+
+    - name: Debug parsed output for the current IOSXE version
+      debug:
+        msg: "{{ inventory_hostname }} currently running with {{ current_xe_ver.version.xe_version }}"
+      when: method == 1
+
+    - name: Assert that switch is NOT running with the target IOSXE version with PyATS
+      tags: pre-check, check-version, install
+      assert:
+        quiet: no
+        success_msg: "{{ inventory_hostname }} not running target verion {{ target_xe_ver }}, current version is {{ current_xe_ver.version.xe_version }}"
+        fail_msg: "{{ inventory_hostname }} already running {{ target_xe_ver }}"
+        that:
+          - "'{{ current_xe_ver.version.xe_version }}' != '{{ target_xe_ver }}'"
+      when: method == 1
+
+    ## Second Method to pull iosxe version with Ansile Facts and compare it with the targer version
+    - name: Assert that switch is NOT running with the target IOSXE version with Ansible Facts
+      tags: pre-check, check-version, install
+      assert:
+        quiet: no
+        success_msg: "{{ inventory_hostname }} not running target verion {{ target_xe_ver }}, current version is {{ ansible_net_version }}"
+        fail_msg: "{{ inventory_hostname }} already running {{ target_xe_ver }}"
+        that:
+          - "'{{ ansible_net_version }}' != '{{ target_xe_ver }}'"
+      when: method == 2
+
+    ## First Method to check the disk space using PyATS
+    - name: Check if switch has the enough disk space for the  target image
+      tags: pre-check, disk_check, image-check, image-copy, install
+      ios_command:
+        commands: dir
+      register: disk_check
+      when: method == 1
+
+    - name: Set fact for the disk space with PyATS 
+      tags: pre-check, disk_check, post-check, install
+      set_fact:
+        dsk_chk: "{{ disk_check['stdout'][0] | pyats_parser('dir', 'iosxe') }}"
+      when: method == 1
+
+    - debug: 
+        msg: "{{ dsk_chk['dir']['bootflash:/']['bytes_free'] }}"
+      when: method == 1
+
+    - name: Assert Enough Disk Space Available
+      tags: image-copy, install
+      assert:
+        quiet: no
+        success_msg: "Enough disk spcae available to accommodate target image."
+        fail_msg: 'Not enough disk space available for the target image!'
+        that:
+          - "{{ dsk_chk['dir']['bootflash:/']['bytes_free'] | int }} > {{ target_image_size }}"
+      when: method == 1
+
+    ## First Method to check if device has the target image
+    - name: Check if switch has the target image in the "bootflash:" directory 
+      tags: pre-check, image-check, image-copy, install
+      ios_command:
+        commands: dir
+      register: image_check
+      when: method == 1
+
+    - name: Set fact for the current IOSXE version with PyATS 
+      tags: pre-check, check-version, post-check, install
+      set_fact:
+        img_chk: "{{ image_check['stdout'][0] | pyats_parser('dir', 'iosxe') }}"
+      when: method == 1
+
+    # - debug: 
+    #     msg: "{{ img_chk['dir']['bootflash:/']['files'] }}"
+    #   when: method == 1
+
+    ## Second Method to check if device has the target image
+    - name: Check if switch has the target image in the "bootflash:" directory 
+      tags: pre-check,install,image-check,image-copy
+      ios_command:
+        commands: "dir bootflash:" 
+      register: image_check
+      when: method == 2
+
+    - name: Set image check as fact
+      tags: pre-check,install,image-check,image-copy
+      set_fact:
+        dir_image_check: "{{ image_check.stdout[0] | regex_search(image_var, multiline=True) }}"
+      vars: 
+        image_var: "{{ target_image }}"
+      when: method == 2
+
+    # - debug: var=dir_image_check
+
+    - name: Copy IOSXE Image if does NOT exists in the bootflash dir
+      block:
+        - name: Assert Bootflash does NOT contain target image before copy
+          tags: image-copy, install
+          assert:
+            quiet: no
+            success_msg: '{{ target_image }} NOT in bootflash'
+            fail_msg: '{{ target_image }} was found in bootflash'
+            that:
+              - "target_image not in {{ img_chk['dir']['bootflash:/']['files'] }}"
+          when: method == 1
+
+        - name: Assert Bootflash does NOT contain target image before copy
+          tags: image-copy, install
+          assert:
+            quiet: no
+            success_msg: '{{ target_image }} NOT in bootflash'
+            fail_msg: '{{ target_image }} was found in bootflash'
+            that:
+              - "'{{ target_image }}' != '{{ dir_image_check }}'"
+          when: method == 2
+          
+        - name: Would you like to copy the IOSXE image via {{ protocol | upper }}?
+          tags: image-copy, install
+          pause:
+            prompt: "Press enter to continue or cntrl-c + a to abort"
+
+        - name: Copy IOSXE image file from {{ scp_server }} via {{ protocol | upper }} server
+          tags: image-copy, install
+          ios_command:
+            commands: 
+              - command: 'copy {{protocol}}://{{scp_user}}@{{scp_server}}/{{ target_image }} flash: vrf {{ vrf }}'
+                check_all: True  
+                prompt:
+                  - "Destination filename [{{ target_image }}]?"
+                  - "Password: "
+                answer:
+                  - "\r"
+                  - "{{ scp_password }}"
+            wait_for:
+              - result[0] contains {{ target_image_size }} bytes copied
+          vars:
+            ansible_command_timeout: 1200
+          no_log: false
+          register: image_copy
+          when: protocol == "scp"
+
+        - name: Copy IOSXE image file from {{ ftp_server }} via {{ protocol | upper }} server
+          tags: image-copy, install
+          ios_command:
+            commands:
+              - command: "copy ftp://{{ ftp_username }}@{{ ftp_server }}/{{ ftp_path }}/{{ target_image }} flash: vrf {{ vrf }}"
+                prompt:
+                  - "Destination filename?"
+                answer:
+                  - "\r"
+            wait_for: 
+              - result[0] contains {{ target_image_size }} bytes copied
+          vars:
+            ansible_command_timeout: 1800
+          when: protocol == "ftp"
+
+        - name: Target image MD5 File Validation
+          tags: image-validate, install
+          ios_command:
+            commands:
+              - verify /md5 bootflash:{{ target_image }} {{ target_image_md5 }}
+            wait_for:
+              - result[0] contains Verified
+          vars:
+            ansible_command_timeout: 600
+          register: image_validation_result
+
+        - name: DEBUG OUTPUT FOR target image Validation
+          tags: image-validate, install
+          debug:
+            msg: "{{ image_validation_result.stdout_lines }}"
+
+      rescue:
+        - name: Checks Status
+          debug: msg='Some checks are failed, please review the output...'
+
+    - name: Preparing to upgrade {{ inventory_hostname }} via Method 1
+      tags: install
+      pause:
+        prompt: "Press enter to continue or cntrl-c + a to abort"
+      when: (current_xe_ver.version.xe_version != target_xe_ver) and method == 1
+
+    - name: Preparing to upgrade {{ inventory_hostname }} via Method 2
+      tags: install
+      pause:
+        prompt: "Press enter to continue or cntrl-c + a to abort"
+      when: (ansible_net_version != target_xe_ver) and method == 2
+
+    - name: Install/Upgrade IOSXE Software
+      block:
+        - name: Saving configuration before upgrading 
+          tags: install
+          ios_command:
+            commands: 
+              - command: 'copy run start'
+                prompt: 'Destination filename'
+                answer: "\r"
+          register: config_save
+
+        - name: Installing Target IOSXE {{ target_xe_ver }}
+          tags: install
+          ios_command:
+            commands:
+              - command: 'install add file flash:{{ target_image }} activate commit'
+                prompt: 
+                  - 'Do you want to proceed?'
+                answer: 
+                  - 'y'
+          register: install_output
+          vars:
+            ansible_command_timeout: 1200
+
+      rescue:
+        - name: Waiting For {{ inventory_hostname }} To Come Back Up
+          wait_for:
+            port: 22
+            state: started
+            timeout: 600
+            delay: 60
+            host: "{{ inventory_hostname }}"
+
+      always:
+        - name: Assert that switch is running with the target IOSXE version {{ target_xe_ver }} After Upgrade
+          tags: post-check, install
+          assert:
+            quiet: no
+            success_msg: "{{ inventory_hostname }} has been upgraded to {{ ansible_net_version }}"
+            fail_msg: "Failed to upgrade the {{ inventory_hostname }}, it is still runninng {{ ansible_net_version }}"
+            that:
+            - "{{ ansible_net_version }}' == '{{ target_xe_ver }}'"
+
+
+
