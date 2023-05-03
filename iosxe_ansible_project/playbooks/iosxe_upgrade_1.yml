@@ -1,7 +1,7 @@
 ---
 
 - name: IOSXE Upgrade Playbook
-  hosts: icn01-vpn00-pe02.webex.com
+  hosts: cat8500-sw01
   gather_facts: false
   connection: network_cli
 
